@@ -15,8 +15,7 @@
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "On",
                 "CMAKE_COMPILE_WARNING_AS_ERROR": "On",
                 "CMAKE_C_COMPILER_LAUNCHER": "ccache",
-                "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
-                "SCAFFOLD_EMBEDDED_BUILD": false
+                "CMAKE_CXX_COMPILER_LAUNCHER": "ccache"
             }
         },
         {
@@ -25,10 +24,7 @@
             "inherits": "defaults",
             "cacheVariables": {
                 "CMAKE_CONFIGURATION_TYPES": "Debug;Release;RelWithDebInfo;MinSizeRel",
-                "SCAFFOLD_TARGET_PLATFORM": "host",
-                "SCAFFOLD_BUILD_TESTS": true,
-                "SCAFFOLD_BUILD_HIL_TESTS": true,
-                "SCAFFOLD_BUILD_SIMULATOR": true,
+                "E_FOC_PROTOCOL_BUILD_TESTS": true,
                 "NUMERICAL_TOOLBOX_ENABLE_OPTIMIZATIONS": false
             },
             "generator": "Ninja Multi-Config"
@@ -39,13 +35,12 @@
             "inherits": "defaults",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
-                "SCAFFOLD_TARGET_PLATFORM": "host",
-                "SCAFFOLD_BUILD_TESTS": true
+                "E_FOC_PROTOCOL_BUILD_TESTS": true
             }
         },
         {
             "name": "windows",
-            "displayName": "Cross-compilation Linux → Windows (clang-cl + xwin)",
+            "displayName": "Cross-compilation Linux \u2192 Windows (clang-cl + xwin)",
             "inherits": "defaults",
             "toolchainFile": "${sourceDir}/infra/embedded-infra-lib/cmake/toolchain-clang-x86_64-pc-windows-msvc.cmake",
             "environment": {
@@ -55,13 +50,8 @@
             "cacheVariables": {
                 "CMAKE_COMPILE_WARNING_AS_ERROR": "Off",
                 "CMAKE_CONFIGURATION_TYPES": "Debug;Release;RelWithDebInfo;MinSizeRel",
-                "CMAKE_PREFIX_PATH": "/opt/qt6-windows/6.10.2/msvc2022_64",
-                "QT_HOST_PATH": "/usr",
-                "QT_HOST_PATH_CMAKE_DIR": "/usr/lib/x86_64-linux-gnu/cmake",
                 "WINDOWS_SDK_ROOT": "/winsdk",
-                "SCAFFOLD_TARGET_PLATFORM": "host",
-                "SCAFFOLD_BUILD_TESTS": true,
-                "SCAFFOLD_BUILD_HIL_TESTS": true,
+                "E_FOC_PROTOCOL_BUILD_TESTS": true,
                 "NUMERICAL_TOOLBOX_ENABLE_OPTIMIZATIONS": false
             },
             "generator": "Ninja Multi-Config"
@@ -85,100 +75,28 @@
             },
             "cacheVariables": {
                 "EMIL_GENERATE_PACKAGE_CONFIG": false,
-                "EMIL_INCLUDE_SEGGER_RTT": "On",
-                "EMIL_SEGGER_RTT_BUFFER_SIZE_UP": "2048",
-                "NUMERICAL_TOOLBOX_ENABLE_OPTIMIZATIONS": true,
-                "SCAFFOLD_EMBEDDED_BUILD": true
+                "NUMERICAL_TOOLBOX_ENABLE_OPTIMIZATIONS": true
             },
             "generator": "Ninja Multi-Config"
         },
         {
-            "name": "tiva",
-            "hidden": true,
+            "name": "cortex-m4",
+            "displayName": "Cortex-M4F",
+            "description": "Compile the library for a Cortex-M4F with single-precision FPU",
             "inherits": "embedded",
-            "environment": {
-                "CMAKE_TOOLCHAIN_FILE": ""
-            },
+            "toolchainFile": "${sourceDir}/infra/embedded-infra-lib/cmake/toolchain-arm-gcc-m4-fpv4-sp-d16.cmake",
             "cacheVariables": {
-                "TARGET_MCU_VENDOR": "ti",
-                "SCAFFOLD_TARGET_PLATFORM": "ti"
+                "TARGET_CORTEX": "m4"
             }
         },
         {
-            "name": "stm32",
-            "hidden": true,
+            "name": "cortex-m33",
+            "displayName": "Cortex-M33F",
+            "description": "Compile the library for a Cortex-M33 with single-precision FPU",
             "inherits": "embedded",
-            "environment": {
-                "CMAKE_TOOLCHAIN_FILE": ""
-            },
-            "cacheVariables": {
-                "TARGET_MCU_VENDOR": "st",
-                "SCAFFOLD_TARGET_PLATFORM": "st"
-            }
-        },
-        {
-            "name": "EK-TM4C1294XL",
-            "displayName": "EK-TM4C1294XL",
-            "description": "Build for tm4c1294ncpdt",
-            "inherits": "tiva",
-            "toolchainFile": "${sourceDir}/infra/embedded-infra-lib/cmake/toolchain-arm-gcc-m4-fpv4-sp-d16.cmake",
-            "cacheVariables": {
-                "TARGET_CORTEX": "m4",
-                "TARGET_MCU_FAMILY": "TM4C129",
-                "TARGET_MCU": "tm4c1294ncpdt",
-                "SCAFFOLD_TARGET_BOARD": "EK-TM4C1294XL"
-            }
-        },
-        {
-            "name": "EK-TM4C123GXL",
-            "displayName": "EK-TM4C123GXL",
-            "description": "Build for tm4c123gh6pm",
-            "inherits": "tiva",
-            "toolchainFile": "${sourceDir}/infra/embedded-infra-lib/cmake/toolchain-arm-gcc-m4-fpv4-sp-d16.cmake",
-            "cacheVariables": {
-                "TARGET_CORTEX": "m4",
-                "TARGET_MCU_FAMILY": "TM4C123",
-                "TARGET_MCU": "tm4c123gh6pm",
-                "SCAFFOLD_TARGET_BOARD": "EK-TM4C123GXL"
-            }
-        },
-        {
-            "name": "STM32F407G-DISC1",
-            "displayName": "STM32F407G-DISC1",
-            "description": "Build for stm32f407",
-            "inherits": "stm32",
-            "toolchainFile": "${sourceDir}/infra/embedded-infra-lib/cmake/toolchain-arm-gcc-m4-fpv4-sp-d16.cmake",
-            "cacheVariables": {
-                "TARGET_CORTEX": "m4",
-                "TARGET_MCU_FAMILY": "stm32f4xx",
-                "TARGET_MCU": "stm32f407",
-                "SCAFFOLD_TARGET_BOARD": "STM32F407G-DISC1"
-            }
-        },
-        {
-            "name": "STM32F429I-DISC1",
-            "displayName": "STM32F429I-DISC1",
-            "description": "Build for stm32f429",
-            "inherits": "stm32",
-            "toolchainFile": "${sourceDir}/infra/embedded-infra-lib/cmake/toolchain-arm-gcc-m4-fpv4-sp-d16.cmake",
-            "cacheVariables": {
-                "TARGET_CORTEX": "m4",
-                "TARGET_MCU_FAMILY": "stm32f4xx",
-                "TARGET_MCU": "stm32f429",
-                "SCAFFOLD_TARGET_BOARD": "STM32F429I-DISC1"
-            }
-        },
-        {
-            "name": "NUCLEO-H563ZI",
-            "displayName": "NUCLEO-H563ZI",
-            "description": "Build for STM32H563ZI",
-            "inherits": "stm32",
             "toolchainFile": "${sourceDir}/infra/embedded-infra-lib/cmake/toolchain-arm-gcc-m33-fpv5-sp-d16.cmake",
             "cacheVariables": {
-                "TARGET_CORTEX": "m33",
-                "TARGET_MCU_FAMILY": "stm32h5xx",
-                "TARGET_MCU": "stm32h563",
-                "SCAFFOLD_TARGET_BOARD": "NUCLEO-H563ZI"
+                "TARGET_CORTEX": "m33"
             }
         }
     ],
@@ -242,54 +160,24 @@
             "configurePreset": "coverage"
         },
         {
-            "name": "EK-TM4C1294XL-RelWithDebInfo",
+            "name": "cortex-m4-RelWithDebInfo",
             "configuration": "RelWithDebInfo",
-            "configurePreset": "EK-TM4C1294XL"
+            "configurePreset": "cortex-m4"
         },
         {
-            "name": "EK-TM4C1294XL-Debug",
+            "name": "cortex-m4-Debug",
             "configuration": "Debug",
-            "configurePreset": "EK-TM4C1294XL"
+            "configurePreset": "cortex-m4"
         },
         {
-            "name": "EK-TM4C123GXL-RelWithDebInfo",
+            "name": "cortex-m33-RelWithDebInfo",
             "configuration": "RelWithDebInfo",
-            "configurePreset": "EK-TM4C123GXL"
+            "configurePreset": "cortex-m33"
         },
         {
-            "name": "EK-TM4C123GXL-Debug",
+            "name": "cortex-m33-Debug",
             "configuration": "Debug",
-            "configurePreset": "EK-TM4C123GXL"
-        },
-        {
-            "name": "STM32F407G-DISC1-RelWithDebInfo",
-            "configuration": "RelWithDebInfo",
-            "configurePreset": "STM32F407G-DISC1"
-        },
-        {
-            "name": "STM32F407G-DISC1-Debug",
-            "configuration": "Debug",
-            "configurePreset": "STM32F407G-DISC1"
-        },
-        {
-            "name": "STM32F429I-DISC1-RelWithDebInfo",
-            "configuration": "RelWithDebInfo",
-            "configurePreset": "STM32F429I-DISC1"
-        },
-        {
-            "name": "STM32F429I-DISC1-Debug",
-            "configuration": "Debug",
-            "configurePreset": "STM32F429I-DISC1"
-        },
-        {
-            "name": "NUCLEO-H563ZI-RelWithDebInfo",
-            "configuration": "RelWithDebInfo",
-            "configurePreset": "NUCLEO-H563ZI"
-        },
-        {
-            "name": "NUCLEO-H563ZI-Debug",
-            "configuration": "Debug",
-            "configurePreset": "NUCLEO-H563ZI"
+            "configurePreset": "cortex-m33"
         }
     ],
     "testPresets": [

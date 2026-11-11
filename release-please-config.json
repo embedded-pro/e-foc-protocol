@@ -6,7 +6,7 @@
   "packages": {
     ".": {
       "release-type": "simple",
-      "package-name": "embedded-scaffold",
+      "package-name": "e-foc-protocol",
       "extra-files": [
         "CMakeLists.txt",
         "sonar-project.properties"

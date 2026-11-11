@@ -15,3 +15,5 @@ target_sources(e_foc_protocol.foc INTERFACE
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/ParameterValidation.hpp>"
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/Units.hpp>"
 )
+
+add_subdirectory(test)

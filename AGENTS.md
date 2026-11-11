@@ -65,7 +65,8 @@ Forbidden everywhere except tests: `new`/`delete`/`malloc`/`free`, `make_unique`
 
 ## Testing
 
-- TDD. GoogleTest, `TEST_F`, fixture in an anonymous namespace, macros outside.
+- TDD. GoogleTest: `TEST_F` for fixture tests, plain `TEST()` only for simple stateless checks. Fixture in an
+  anonymous namespace, macros outside.
 - **`StrictMock` only** (`NiceMock`/`NaggyMock` forbidden). `EXPECT_NEAR` with an explicit tolerance.
 - Test files: `<component>/test/Test{Name}.cpp`, registered with `emil_build_for` / `emil_add_test`.
 - Integration steps check values inside the mock action (`EXPECT_*` there), not in `EXPECT_CALL` matchers:

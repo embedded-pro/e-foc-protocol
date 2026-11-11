@@ -34,7 +34,7 @@ Before researching or planning, ask the user targeted questions:
   `interfaces/` that must be implemented or extended.
 - **Timing constraints**: assess whether each step stays within the relevant cycle
   budget for hot-path changes.
-- **Numerical tools**: identify if `infra/numerical-toolbox/` algorithms (PID,
+- **Numerical tools**: identify if numerical-toolbox (`numerical/…`) algorithms (PID,
   filters) can be reused or need extension.
 - **Documentation**: check for existing architecture/design docs under
   `documentation/` for the affected component. Any behavioural change must be
@@ -99,7 +99,7 @@ paths (the `e-foc-protocol/` library). Tests may use normal host STL/heap patter
 
 ### Design — SOLID + DRY
 - [ ] Single Responsibility; extend via new implementations; constructor injection
-- [ ] DRY: reuse `infra/numerical-toolbox/` — no duplicated logic
+- [ ] DRY: reuse numerical-toolbox (`numerical/…`) — no duplicated logic
 
 ### Naming — PascalCase
 - [ ] Classes/Methods `PascalCase`; members `camelCase`; namespaces lowercase

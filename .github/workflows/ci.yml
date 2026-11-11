@@ -35,7 +35,6 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          submodules: recursive
       - uses: hendrikmuhs/ccache-action@f09c25b45002a07be2955cbe52e8cee55643f89d # v1.2.24
         with:
           key: ${{ github.job }}-ubuntu-latest
@@ -131,13 +130,14 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          submodules: recursive
       - name: Cache ccache
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ github.workspace }}/.ccache
           key: ${{ github.job }}-windows-cross-${{ github.sha }}
           restore-keys: ${{ github.job }}-windows-cross-
+      - name: Fetch embedded-infra-lib (toolchain bootstrap)
+        run: cmake --preset bootstrap
       - name: Cross-compile for Windows
         run: cmake --preset windows && cmake --build --preset windows-RelWithDebInfo
         env:
@@ -161,12 +161,13 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          submodules: recursive
       - uses: hendrikmuhs/ccache-action@f09c25b45002a07be2955cbe52e8cee55643f89d # v1.2.24
         with:
           key: ${{ matrix.configuration }}-${{ matrix.target }}
           max-size: 2G
           save: ${{ github.ref == 'refs/heads/main' }}
+      - name: Fetch embedded-infra-lib (toolchain bootstrap)
+        run: cmake --preset bootstrap
       - uses: lukka/run-cmake@5d55ea7949e25f69f0ecb516d8d572297e03a956 # v10.9
         with:
           configurePreset: ${{ matrix.target }}

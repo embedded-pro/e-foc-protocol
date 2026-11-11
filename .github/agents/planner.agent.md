@@ -27,7 +27,7 @@ and hot-path involvement, and explicit acceptance criteria.
 - **Existing patterns**: search `e-foc-protocol/` for similar components and follow them.
 - **Interface contracts**: identify interfaces in a component's `interfaces/`.
 - **Timing constraints**: assess hot-path cycle budgets.
-- **Numerical tools**: see if `infra/numerical-toolbox/` can be reused or extended.
+- **Numerical tools**: see if numerical-toolbox (`numerical/…`) can be reused or extended.
 - **Documentation**: check for existing architecture/design docs for the component.
 
 ### 2. Plan Structure
@@ -62,7 +62,7 @@ normal host STL/heap patterns.
 - [ ] Cycle budget documented; `OPTIMIZE_FOR_SPEED` applied; no `#pragma GCC optimize`
 
 ### Design — SOLID + DRY
-- [ ] Single Responsibility; extend via new implementations; constructor injection; reuse `infra/numerical-toolbox/`
+- [ ] Single Responsibility; extend via new implementations; constructor injection; reuse numerical-toolbox (`numerical/…`)
 
 ### Naming & Style
 - [ ] Classes/Methods `PascalCase`; members `camelCase`; namespaces lowercase; Allman braces

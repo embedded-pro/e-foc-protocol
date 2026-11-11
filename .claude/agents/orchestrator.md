@@ -40,7 +40,7 @@ agent. You do NOT implement code or produce detailed plans yourself.
   - `e-foc-protocol/foc/` — units and command limits
   - `e-foc-protocol/contract/` — message catalogue and wire contract
   - `e-foc-protocol/server/`, `e-foc-protocol/client/` — the category server and client (+ tests, test doubles)
-  - `infra/numerical-toolbox/` — PID, filters, fixed-point math
+  - numerical-toolbox (`numerical/…`) — PID, filters, fixed-point math
 - Does it change the wire contract? Then the contract version and the design document change with it.
 - What is the timing budget for any hot-path change?
 - Are existing tests or integration tests affected?
@@ -49,4 +49,3 @@ agent. You do NOT implement code or produce detailed plans yourself.
 ## Project References
 
 - Project guidelines: [AGENTS.md](../../AGENTS.md)
-- Numerical toolbox guidelines: [`infra/numerical-toolbox/.github/copilot-instructions.md`](../../infra/numerical-toolbox/.github/copilot-instructions.md)

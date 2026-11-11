@@ -26,8 +26,8 @@ date: 2026-11-11
   microcontroller as well as on hosts.
 - **Constraint**: the library knows nothing of what a node does with a command; it decodes and encodes.
 - **Constraint**: one definition of the contract, shared by the node and every client.
-- **Assumption**: the consumer provides embedded-infra-lib, can-lite and numerical-toolbox when it adds this
-  library to its own build; a standalone build takes them from submodules.
+- **Assumption**: embedded-infra-lib, can-lite and numerical-toolbox are fetched only when the build has no
+  target for them yet, so a consumer that already provides them keeps a single copy of each.
 
 ---
 

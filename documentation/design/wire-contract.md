@@ -137,12 +137,12 @@ the profile is on only while `profileVelocity` and `profileAcceleration` are bot
 zero the path is an S-curve whose rate of change of acceleration stays within it. The meaning of 0x68 was
 reserved until the firmware used it; its identifier, range and encoding are unchanged, so the version stays 3.1.
 
-| ID     | Parameter             | Unit   | Range                             | Automatic | Takes effect                |
-|--------|-----------------------|--------|-----------------------------------|-----------|-----------------------------|
-| `0x65` | `profileVelocity`     | rad/s  | 0 – 5000, 0 profile off           | no        | at the next outer-loop tick |
-| `0x66` | `profileAcceleration` | rad/s2 | 0 – 100000, 0 profile off         | no        | at the next outer-loop tick |
-| `0x67` | `profileDeceleration` | rad/s2 | 0 – 100000, 0 the acceleration    | no        | at the next outer-loop tick |
-| `0x68` | `profileJerk`         | rad/s3 | 0 – 10000000, 0 trapezoidal       | no        | at the next outer-loop tick |
+| ID     | Parameter             | Unit   | Range                          | Automatic | Takes effect                |
+|--------|-----------------------|--------|--------------------------------|-----------|-----------------------------|
+| `0x65` | `profileVelocity`     | rad/s  | 0 – 5000, 0 profile off        | no        | at the next outer-loop tick |
+| `0x66` | `profileAcceleration` | rad/s2 | 0 – 100000, 0 profile off      | no        | at the next outer-loop tick |
+| `0x67` | `profileDeceleration` | rad/s2 | 0 – 100000, 0 the acceleration | no        | at the next outer-loop tick |
+| `0x68` | `profileJerk`         | rad/s3 | 0 – 10000000, 0 trapezoidal    | no        | at the next outer-loop tick |
 
 **Contract 2.1 — algorithms and parameters.** Version 2.1 adds four commands and two responses; nothing in
 2.0 changes, so a 2.0 client keeps working against a 2.1 server and a 2.1 client can tell from the minor

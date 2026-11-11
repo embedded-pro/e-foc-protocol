@@ -66,7 +66,7 @@ hot-path methods.
 
 - SOLID principles — constructor injection, one class = one concern
 - Collaborators (transport, observers) injected via constructor
-- Reuse `infra/numerical-toolbox/` for PID, filters, and math — do not duplicate
+- Reuse numerical-toolbox (`numerical/…`) for PID, filters, and math — do not duplicate
 - RAII for resource management
 
 ## Documentation — MANDATORY

@@ -100,7 +100,7 @@ namespace can
   constructors, never global state
 - **Interface-driven**: observers are abstract interfaces with a protected, non-virtual destructor
 - **Small Functions**: ~30 lines max (hard limit ~50); extract named helpers
-- **DRY**: reuse `infra/numerical-toolbox/` PID, filters, and math — do not duplicate
+- **DRY**: reuse numerical-toolbox (`numerical/…`) PID, filters, and math — do not duplicate
 - **`const` correctness**; **`constexpr`** for constants and lookup tables
 
 ### Error Handling
@@ -132,7 +132,7 @@ Follow the TDD Red-Green-Refactor cycle. **Ask clarifying questions before writi
    hardware target, acceptance criteria.
 2. **Read the plan or task** carefully.
 3. **Search for existing patterns** in `e-foc-protocol/` — follow them exactly.
-4. **Reuse `infra/numerical-toolbox/` algorithms** rather than reimplementing.
+4. **Reuse numerical-toolbox (`numerical/…`) algorithms** rather than reimplementing.
 5. **Red** — write failing tests first.
 6. **Green** — implement the minimum production code, one file at a time.
 7. **Add `OPTIMIZE_FOR_SPEED`** to hot-path code (never `#pragma GCC optimize`).

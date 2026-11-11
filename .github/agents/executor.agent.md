@@ -78,7 +78,7 @@ namespace can
 ### Design Principles
 
 - Single Responsibility; constructor injection of collaborators; interface-driven; small functions (~30 lines, hard limit ~50)
-- DRY: reuse `infra/numerical-toolbox/` — do not duplicate
+- DRY: reuse numerical-toolbox (`numerical/…`) — do not duplicate
 - `const` correctness; `constexpr` for constants and lookup tables
 
 ### Error Handling
@@ -106,7 +106,7 @@ Follow TDD Red-Green-Refactor. **Ask clarifying questions before writing any cod
 1. Clarify requirements (inputs/outputs, edge cases, hardware target, acceptance criteria)
 2. Read the plan/task carefully
 3. Search for existing patterns in `e-foc-protocol/` — follow them
-4. Reuse `infra/numerical-toolbox/` algorithms
+4. Reuse numerical-toolbox (`numerical/…`) algorithms
 5. **Red** — write failing tests first
 6. **Green** — minimum production code, one file at a time
 7. Add `OPTIMIZE_FOR_SPEED` to hot-path code (never `#pragma GCC optimize`)

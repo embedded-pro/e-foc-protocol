@@ -96,7 +96,7 @@ tools, simulators, and tests, do not raise CRITICAL solely for STL/heap usage.
 ### 8. Design Principles — SOLID (WARNING)
 
 - [ ] SRP / OCP / LSP / ISP / DIP respected
-- [ ] DRY: no reimplementation of PID, filters, or math from `infra/numerical-toolbox/`
+- [ ] DRY: no reimplementation of PID, filters, or math from numerical-toolbox (`numerical/…`)
 
 ### 9. Error Handling (WARNING)
 

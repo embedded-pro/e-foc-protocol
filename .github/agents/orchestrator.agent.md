@@ -39,7 +39,7 @@ agent. You do NOT implement code or produce detailed plans yourself.
 ## Context to Gather Before Routing
 
 - Which layer? `e-foc-protocol/{foc,contract,server,client}`,
-  `infra/numerical-toolbox/`.
+  numerical-toolbox (`numerical/…`).
 - Does the wire contract change? Timing budget for hot-path changes?
 - Are existing tests or integration tests affected? Documentation updates needed?
 

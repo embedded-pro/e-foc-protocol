@@ -20,6 +20,8 @@ set(E_FOC_PROTOCOL_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
 include(GNUInstallDirs)
 
+include(FetchContent)
+
 if (E_FOC_PROTOCOL_STANDALONE)
     if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
         set(CMAKE_C_FLAGS_DEBUG "-Og -g" CACHE STRING "C Debug flags" FORCE)
@@ -30,6 +32,14 @@ if (E_FOC_PROTOCOL_STANDALONE)
     include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/CompilerWarnings.cmake")
 
     set_directory_properties(PROPERTY USE_FOLDERS ON)
+endif()
+
+if (NOT TARGET infra.util)
+    FetchContent_Declare(
+        emil
+        GIT_REPOSITORY https://github.com/embedded-pro/embedded-infra-lib.git
+        GIT_TAG        594041879bd40e9a4d9de9961dc4784b0dd668ea # main
+    )
 
     set(EMIL_INCLUDE_ECHO Off CACHE BOOL "" FORCE)
     set(EMIL_FETCH_ECHO_COMPILERS Off CACHE BOOL "" FORCE)
@@ -37,28 +47,44 @@ if (E_FOC_PROTOCOL_STANDALONE)
     set(EMIL_ENABLE_DOCKER_TOOLS Off CACHE BOOL "" FORCE)
     set(EMIL_INCLUDE_MBEDTLS Off CACHE BOOL "" FORCE)
 
-    add_subdirectory(infra/embedded-infra-lib)
+    FetchContent_MakeAvailable(emil)
+endif()
 
-    if (E_FOC_PROTOCOL_BUILD_TESTS)
-        set(CCR_FETCH_DEPS On CACHE BOOL "" FORCE)
-        set(CCR_BUILD_TESTS Off CACHE BOOL "" FORCE)
+if (E_FOC_PROTOCOL_STANDALONE AND E_FOC_PROTOCOL_BUILD_TESTS)
+    set(CCR_FETCH_DEPS On CACHE BOOL "" FORCE)
+    set(CCR_BUILD_TESTS Off CACHE BOOL "" FORCE)
 
-        include(FetchContent)
-        FetchContent_Declare(
-            cucumber_cpp
-            GIT_REPOSITORY https://github.com/philips-software/amp-cucumber-cpp-runner.git
-            GIT_TAG        v4.1.0
-        )
-        FetchContent_MakeAvailable(cucumber_cpp)
+    FetchContent_Declare(
+        cucumber_cpp
+        GIT_REPOSITORY https://github.com/philips-software/amp-cucumber-cpp-runner.git
+        GIT_TAG        v4.1.0
+    )
+    FetchContent_MakeAvailable(cucumber_cpp)
 
-        if (TARGET cucumber_cpp.library.api)
-            target_compile_options(cucumber_cpp.library.api PRIVATE -Wno-deprecated-declarations)
-        endif()
+    if (TARGET cucumber_cpp.library.api)
+        target_compile_options(cucumber_cpp.library.api PRIVATE -Wno-deprecated-declarations)
     endif()
+endif()
 
-    add_subdirectory(infra/can-lite)
-    add_subdirectory(infra/numerical-toolbox)
+if (NOT TARGET can_lite.core)
+    FetchContent_Declare(
+        can_lite
+        GIT_REPOSITORY https://github.com/embedded-pro/can-lite.git
+        GIT_TAG        0405e172589f6171bcfa322bcead833fcc64a631 # main
+    )
+    FetchContent_MakeAvailable(can_lite)
+endif()
 
+if (NOT TARGET numerical.math)
+    FetchContent_Declare(
+        numerical_toolbox
+        GIT_REPOSITORY https://github.com/embedded-pro/numerical-toolbox-cpp.git
+        GIT_TAG        5852920f76888af42419958bca533d3380242e7e # main
+    )
+    FetchContent_MakeAvailable(numerical_toolbox)
+endif()
+
+if (E_FOC_PROTOCOL_STANDALONE)
     if (E_FOC_PROTOCOL_BUILD_TESTS)
         include(CTest)
         emil_enable_testing()
@@ -94,9 +120,11 @@ endif()
 
 emil_clangformat_directories(e_foc_protocol DIRECTORIES ${E_FOC_PROTOCOL_FORMAT_DIRECTORIES})
 emil_folderize_all_targets()
-emil_exclude_directory_from_coverage(infra/embedded-infra-lib)
-emil_exclude_directory_from_coverage(infra/can-lite)
-emil_exclude_directory_from_coverage(infra/numerical-toolbox)
+foreach(dependency emil can_lite numerical_toolbox)
+    if (DEFINED ${dependency}_SOURCE_DIR)
+        emil_exclude_directory_from_coverage(${${dependency}_SOURCE_DIR})
+    endif()
+endforeach()
 emil_coverage_targets(DIRECTORIES .)
 
 set(CPACK_GENERATOR "ZIP;TGZ")

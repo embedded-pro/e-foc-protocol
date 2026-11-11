@@ -20,8 +20,9 @@ the motor node's MCU and on hosts alike, so it is held to embedded rules everywh
   tracker and category client on one `hal::Can`).
 - `*/test/` — unit tests; `*/test_doubles/` — observer mocks for consumers.
 - `integration_tests/` — cucumber-cpp: a client and a server on a virtual bus.
-- `infra/` — submodules `embedded-infra-lib`, `can-lite`, `numerical-toolbox`, used only when this repository
-  is built standalone. A consumer that adds this repository with `add_subdirectory` provides those targets.
+- Dependencies — `embedded-infra-lib`, `can-lite` and `numerical-toolbox` come through `FetchContent`, each only
+  when its target (`infra.util`, `can_lite.core`, `numerical.math`) does not exist yet; a consumer that already
+  provides them keeps its own copies. Pinned revisions live in the root `CMakeLists.txt`.
 
 CMake targets: `e_foc_protocol.foc`, `e_foc_protocol.contract`, `e_foc_protocol.server`,
 `e_foc_protocol.client`, `e_foc_protocol.{server,client}_test_doubles`. Includes are rooted at the repository
@@ -81,13 +82,13 @@ Design-first: `documentation/design/wire-contract.md` is the specification and i
 ## Build
 
 ```bash
-git submodule update --init
 cmake --preset host && cmake --build --preset host-Debug
 ctest --preset host
+cmake --preset bootstrap   # once: fetches the toolchain files for windows, cortex-m4, cortex-m33
 cmake --preset cortex-m4 && cmake --build --preset cortex-m4-RelWithDebInfo
 ```
 
-Presets: `host`, `host-single-Debug`, `coverage`, `windows`, `cortex-m4`, `cortex-m33`.
+Presets: `host`, `host-single-Debug`, `coverage`, `bootstrap`, `windows`, `cortex-m4`, `cortex-m33`.
 
 ## Assistant behavior
 

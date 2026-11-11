@@ -37,7 +37,6 @@ jobs:
         with:
           fetch-depth: 0 # Disable shallow clone to enable blame information
           token: ${{ secrets.PRIVATE_REPO_TOKEN || github.token }}
-          submodules: true
       - name: Install Sonar Scanner
         run: |
           wget -qN "https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux-x64.zip"

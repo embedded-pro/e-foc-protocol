@@ -69,7 +69,7 @@ solely for STL/heap usage.
 
 ### 7. Design — SOLID (WARNING)
 
-- [ ] SRP/OCP/LSP/ISP/DIP respected; DRY (reuse `infra/numerical-toolbox/`)
+- [ ] SRP/OCP/LSP/ISP/DIP respected; DRY (reuse numerical-toolbox (`numerical/…`))
 
 ### 8. Error Handling (WARNING)
 

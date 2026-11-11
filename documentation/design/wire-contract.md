@@ -625,7 +625,7 @@ a field order or width that has drifted. Two kinds of test do:
 
 ### Deviations from the can-lite reference example
 
-`infra/can-lite` (pinned at `ea80b3e`) ships `examples/foc_motor`, which also claims category `0x02` and
+can-lite (as of `ea80b3e`) ships `examples/foc_motor`, which also claims category `0x02` and
 disagrees with this contract. e-foc's definitions are authoritative for this product; the example is
 documentation. Because every decode is length-exact, a frame built from the example is rejected with
 `invalidPayload` rather than misread — visibly, not silently.

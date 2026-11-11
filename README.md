@@ -35,10 +35,16 @@ documentation/     # design (wire contract), architecture, requirements
 
 ## Using it
 
-Add the repository as a submodule and include it after embedded-infra-lib, can-lite and numerical-toolbox:
+Add it with `FetchContent` (or as a submodule). It fetches embedded-infra-lib, can-lite and numerical-toolbox
+itself only when their targets do not exist yet, so a consumer that already has them keeps its own copies:
 
 ```cmake
-add_subdirectory(infra/e-foc-protocol)
+FetchContent_Declare(
+    e_foc_protocol
+    GIT_REPOSITORY https://github.com/embedded-pro/e-foc-protocol.git
+    GIT_TAG        <commit>
+)
+FetchContent_MakeAvailable(e_foc_protocol)
 
 target_link_libraries(my_motion_controller PUBLIC e_foc_protocol.client)
 ```
@@ -53,13 +59,14 @@ Targets: `e_foc_protocol.foc`, `e_foc_protocol.contract`, `e_foc_protocol.server
 ## Building and testing
 
 ```bash
-git clone --recursive https://github.com/embedded-pro/e-foc-protocol.git
+git clone https://github.com/embedded-pro/e-foc-protocol.git
 cmake --preset host
 cmake --build --preset host-Debug
 ctest --preset host
 ```
 
-Compile checks for Cortex-M: `cortex-m4`, `cortex-m33` presets. Coverage: `coverage` preset.
+Compile checks for Cortex-M: `cortex-m4`, `cortex-m33` presets; run `cmake --preset bootstrap` once first, it fetches
+the embedded-infra-lib toolchain files they use (as does `windows`). Coverage: `coverage` preset.
 
 ## Documentation
 
@@ -72,4 +79,4 @@ Compile checks for Cortex-M: `cortex-m4`, `cortex-m33` presets. Coverage: `cover
 
 ## License
 
-See [LICENSE](LICENSE). Third-party components and submodules keep their own license terms.
+See [LICENSE](LICENSE). Third-party components keep their own license terms.

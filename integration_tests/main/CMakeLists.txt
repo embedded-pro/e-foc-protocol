@@ -1,5 +1,5 @@
 add_executable(e_foc_protocol.integration_tests)
-emil_build_for(e_foc_protocol.integration_tests HOST All BOOL E_FOC_PROTOCOL_BUILD_TESTS)
+emil_build_for(e_foc_protocol.integration_tests HOST All PREREQUISITE_BOOL E_FOC_PROTOCOL_BUILD_TESTS)
 
 target_link_libraries(e_foc_protocol.integration_tests PRIVATE
     e_foc_protocol.integration_tests.steps

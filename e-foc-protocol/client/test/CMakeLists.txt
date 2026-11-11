@@ -1,5 +1,5 @@
 add_executable(e_foc_protocol.client_test)
-emil_build_for(e_foc_protocol.client_test HOST All BOOL E_FOC_PROTOCOL_BUILD_TESTS)
+emil_build_for(e_foc_protocol.client_test HOST All PREREQUISITE_BOOL E_FOC_PROTOCOL_BUILD_TESTS)
 emil_add_test(e_foc_protocol.client_test)
 
 target_link_libraries(e_foc_protocol.client_test PUBLIC

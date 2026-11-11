@@ -63,7 +63,6 @@ jobs:
           path: build/host/e_foc_protocol-*.*
           if-no-files-found: error
 
-
   build_documentation:
     name: Build Documentation
     needs: release_please
@@ -81,8 +80,8 @@ jobs:
       - name: Generate documentation PDFs and traceability matrix
         uses: embedded-pro/project-documentation@54fca1cb9925af16e53bd9d2640d1285560d295b # v0.2.0
         with:
-          run-build-documentation-pdfs: 'true'
-          run-traceability-matrix: 'true'
+          run-build-documentation-pdfs: "true"
+          run-traceability-matrix: "true"
           version: ${{ needs.release_please.outputs.tag_name }}
           output-dir: docs-pdf
           artifact-name: documentation-pdfs
@@ -93,12 +92,7 @@ jobs:
 
   publish_release_assets:
     name: Publish Release Assets
-    needs:
-      [
-        release_please,
-        build_host,
-        build_documentation
-      ]
+    needs: [release_please, build_host, build_documentation]
     if: needs.release_please.outputs.release_created == 'true'
     runs-on: ubuntu-latest
     permissions:

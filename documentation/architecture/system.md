@@ -57,12 +57,12 @@ flowchart LR
 
 ## Component Decomposition
 
-| Component | Responsibility                                                                    |
-|-----------|-----------------------------------------------------------------------------------|
-| foc       | Units, accepted parameter ranges and their checks                                 |
-| contract  | Message catalogue, payload descriptors, parameter table, contract version         |
-| server    | Decodes commands into observer callbacks; encodes answers and telemetry           |
-| client    | Encodes commands; decodes answers and telemetry; tracks each node's contract      |
+| Component | Responsibility                                                               |
+|-----------|------------------------------------------------------------------------------|
+| foc       | Units, accepted parameter ranges and their checks                            |
+| contract  | Message catalogue, payload descriptors, parameter table, contract version    |
+| server    | Decodes commands into observer callbacks; encodes answers and telemetry      |
+| client    | Encodes commands; decodes answers and telemetry; tracks each node's contract |
 
 ```mermaid
 flowchart TD
@@ -79,25 +79,25 @@ flowchart TD
 
 ### Provided Interfaces
 
-| Interface                      | Direction | Purpose                                     | Invariants                                  |
-|--------------------------------|-----------|---------------------------------------------|---------------------------------------------|
-| FocMotorCategoryServer         | provided  | The node's side of the category             | Length-exact decode; one observer           |
-| FocMotorCategoryServerObserver | provided  | What the node does with each command        | Callbacks do not block or allocate          |
-| FocMotorCanClient              | provided  | The client's side of the category on a bus  | Refuses commands to an incompatible node    |
-| FocMotorCategoryClientObserver | provided  | Answers and telemetry, named by source node | Callbacks do not block or allocate          |
+| Interface                      | Direction | Purpose                                     | Invariants                               |
+|--------------------------------|-----------|---------------------------------------------|------------------------------------------|
+| FocMotorCategoryServer         | provided  | The node's side of the category             | Length-exact decode; one observer        |
+| FocMotorCategoryServerObserver | provided  | What the node does with each command        | Callbacks do not block or allocate       |
+| FocMotorCanClient              | provided  | The client's side of the category on a bus  | Refuses commands to an incompatible node |
+| FocMotorCategoryClientObserver | provided  | Answers and telemetry, named by source node | Callbacks do not block or allocate       |
 
 ### Required Interfaces
 
-| Interface         | Direction | Purpose                     | Invariants                                  |
-|-------------------|-----------|-----------------------------|---------------------------------------------|
-| hal::Can          | required  | Raw CAN bus access          | Provided by the platform                    |
-| CanFrameTransport | required  | Framing, sequence and ACKs  | Provided by can-lite                        |
+| Interface         | Direction | Purpose                    | Invariants               |
+|-------------------|-----------|----------------------------|--------------------------|
+| hal::Can          | required  | Raw CAN bus access         | Provided by the platform |
+| CanFrameTransport | required  | Framing, sequence and ACKs | Provided by can-lite     |
 
 ---
 
 ## Open Questions & Decisions
 
-| # | Question / Decision                                        | Status   | Options Considered                        | Rationale                                                          |
-|---|------------------------------------------------------------|----------|-------------------------------------------|--------------------------------------------------------------------|
-| 1 | Where the contract lives                                   | decided  | e-foc `core/can`, can-lite, own library   | Shared by firmware and clients without pulling in the firmware     |
-| 2 | Board-kind registry                                        | decided  | In the contract, in the firmware          | The contract carries a byte; which kinds exist is the firmware's   |
+| # | Question / Decision      | Status  | Options Considered                      | Rationale                                                        |
+|---|--------------------------|---------|-----------------------------------------|------------------------------------------------------------------|
+| 1 | Where the contract lives | decided | e-foc `core/can`, can-lite, own library | Shared by firmware and clients without pulling in the firmware   |
+| 2 | Board-kind registry      | decided | In the contract, in the firmware        | The contract carries a byte; which kinds exist is the firmware's |

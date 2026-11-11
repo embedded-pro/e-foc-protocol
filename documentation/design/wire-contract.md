@@ -346,7 +346,7 @@ Before 2.8 the fault codes `hardwareFault` (a CAN bus-off, a failed NVM write) a
 `none`, and `Ready` went out as `idle`, so a client could neither tell why the drive faulted nor tell a calibrated
 drive from one that still needs a calibration.
 
-| `FocMotorState`      | Value | Lifecycle state (e-foc `state-machine.md`)                                  |
+| `FocMotorState`      | Value | Lifecycle state (e-foc `state-machine.md`)                            |
 |----------------------|-------|-----------------------------------------------------------------------|
 | `idle`               | 0     | `Idle`: not calibrated for the active mode                            |
 | `running`            | 1     | `Enabled`                                                             |
@@ -379,23 +379,23 @@ changes. The settings are drive-wide limits kept in the configuration record (e-
 supervision settings of 2.4 they can be written in any state, are answered once stored, and a write that cannot
 be stored is taken back; each takes effect as its table says.
 
-| ID     | Parameter              | Unit   | Range                  | Automatic | Takes effect                                                       |
-|--------|------------------------|--------|------------------------|-----------|--------------------------------------------------------------------|
-| `0x50` | `overspeedLimit`       | rad/s  | 1 – 5000               | no        | immediately: speed limiter, setpoint hold and monitor              |
-| `0x51` | `followingErrorWindow` | rad    | 0 – 3.2, 0 off         | no        | at the monitor's next evaluation, within 1 ms                      |
-| `0x52` | `followingErrorTime`   | s      | 0.001 – 10             | no        | at the monitor's next evaluation, within 1 ms                      |
-| `0x53` | `speedAcceleration`    | rad/s2 | 0 – 100000, 0 no limit | no        | at the next outer-loop period (e-foc `foc-speed.md`, Speed Ramp)         |
-| `0x54` | `speedDeceleration`    | rad/s2 | 0 – 100000, 0 no limit | no        | at the next outer-loop period (e-foc `foc-speed.md`, Speed Ramp)         |
-| `0x55` | `commandTimeout`       | s      | 0 – 60, 0 off          | no        | at the next 1 ms evaluation (e-foc `service-can.md` Part F, Command timeout)              |
-| `0x56` | `continuousCurrent`    | A      | 0 – 100, 0 off         | no        | at the overload model's next evaluation (e-foc `fault-supervision.md` I) |
-| `0x57` | `peakCurrent`          | A      | 0 – 100, 0 board limit | no        | at the overload model's next evaluation (e-foc `fault-supervision.md` I) |
-| `0x58` | `peakCurrentTime`      | s      | 0.1 – 60               | no        | at the overload model's next evaluation (e-foc `fault-supervision.md` I) |
+| ID     | Parameter              | Unit   | Range                  | Automatic | Takes effect                                                                 |
+|--------|------------------------|--------|------------------------|-----------|------------------------------------------------------------------------------|
+| `0x50` | `overspeedLimit`       | rad/s  | 1 – 5000               | no        | immediately: speed limiter, setpoint hold and monitor                        |
+| `0x51` | `followingErrorWindow` | rad    | 0 – 3.2, 0 off         | no        | at the monitor's next evaluation, within 1 ms                                |
+| `0x52` | `followingErrorTime`   | s      | 0.001 – 10             | no        | at the monitor's next evaluation, within 1 ms                                |
+| `0x53` | `speedAcceleration`    | rad/s2 | 0 – 100000, 0 no limit | no        | at the next outer-loop period (e-foc `foc-speed.md`, Speed Ramp)             |
+| `0x54` | `speedDeceleration`    | rad/s2 | 0 – 100000, 0 no limit | no        | at the next outer-loop period (e-foc `foc-speed.md`, Speed Ramp)             |
+| `0x55` | `commandTimeout`       | s      | 0 – 60, 0 off          | no        | at the next 1 ms evaluation (e-foc `service-can.md` Part F, Command timeout) |
+| `0x56` | `continuousCurrent`    | A      | 0 – 100, 0 off         | no        | at the overload model's next evaluation (e-foc `fault-supervision.md` I)     |
+| `0x57` | `peakCurrent`          | A      | 0 – 100, 0 board limit | no        | at the overload model's next evaluation (e-foc `fault-supervision.md` I)     |
+| `0x58` | `peakCurrentTime`      | s      | 0.1 – 60               | no        | at the overload model's next evaluation (e-foc `fault-supervision.md` I)     |
 
-| `FocFaultCode`   | Value | `state_machine::FaultCode` | Raised by                                          |
-|------------------|-------|----------------------------|----------------------------------------------------|
+| `FocFaultCode`   | Value | `state_machine::FaultCode` | Raised by                                                |
+|------------------|-------|----------------------------|----------------------------------------------------------|
 | `overSpeed`      | 10    | `overspeed`                | Overspeed monitor (e-foc `fault-supervision.md` G)       |
 | `followingError` | 11    | `followingError`           | Following-error monitor (e-foc `fault-supervision.md` H) |
-| `commandTimeout` | 12    | `commandTimeout`           | Command timeout (e-foc `service-can.md` Part F)                           |
+| `commandTimeout` | 12    | `commandTimeout`           | Command timeout (e-foc `service-can.md` Part F)          |
 
 Adding enumerators leaves the meaning of the existing ones unchanged, which keeps it a minor version, as `stall`
 was in 2.4. A client older than 2.9 shows the new codes as unknown faults, and asks for the new parameters only
@@ -405,8 +405,8 @@ when the server reports 2.9 or newer, since an older one answers `invalidPayload
 nothing in 2.9 changes. The settings are drive-wide limits like those of 2.9: they can be written in any state,
 are answered once stored, and a write that cannot be stored is taken back.
 
-| ID     | Parameter            | Unit | Range          | Automatic | Takes effect                                    |
-|--------|----------------------|------|----------------|-----------|-------------------------------------------------|
+| ID     | Parameter            | Unit | Range          | Automatic | Takes effect                                          |
+|--------|----------------------|------|----------------|-----------|-------------------------------------------------------|
 | `0x59` | `positionWindow`     | rad  | 0 – 3.2, 0 off | no        | within 1 ms (e-foc `foc-position.md`, Target Reached) |
 | `0x5A` | `positionWindowTime` | s    | 0 – 10         | no        | within 1 ms (e-foc `foc-position.md`, Target Reached) |
 
@@ -423,8 +423,8 @@ since an older one answers `invalidPayload` for each.
 They are drive-wide limits like those of 2.9 and are off while the minimum is not below the maximum
 (e-foc `foc-position.md`, Software Position Limits).
 
-| ID     | Parameter         | Unit | Range                      | Automatic | Takes effect                               |
-|--------|-------------------|------|----------------------------|-----------|--------------------------------------------|
+| ID     | Parameter         | Unit | Range                      | Automatic | Takes effect                                     |
+|--------|-------------------|------|----------------------------|-----------|--------------------------------------------------|
 | `0x5B` | `positionMinimum` | rad  | −3.2 – 3.2, off when ≥ max | no        | at the next 1 kHz tick (e-foc `foc-position.md`) |
 | `0x5C` | `positionMaximum` | rad  | −3.2 – 3.2, off when ≤ min | no        | at the next 1 kHz tick (e-foc `foc-position.md`) |
 
@@ -434,8 +434,8 @@ asks for the new parameters only when the server reports 2.11 or newer.
 
 **Contract 2.12 — position limit fault.** Version 2.12 adds one fault code; nothing in 2.11 changes.
 
-| `FocFaultCode`  | Value | `state_machine::FaultCode` | Raised by                                         |
-|-----------------|-------|----------------------------|---------------------------------------------------|
+| `FocFaultCode`  | Value | `state_machine::FaultCode` | Raised by                                               |
+|-----------------|-------|----------------------------|---------------------------------------------------------|
 | `positionLimit` | 13    | `positionLimit`            | Position-limit monitor (e-foc `fault-supervision.md` J) |
 
 A client older than 2.12 shows the code as an unknown fault.
@@ -651,8 +651,15 @@ The observer interface provides callbacks for:
 - `OnQueryFaultHistory`, `OnClearFaultHistory` — the fault history of contract 2.16, with a record or a status callback.
 - `OnSelectControlMode` — takes a `FocMotorMode` and a result callback.
 - `OnSetSetpoint` — takes a small tagged value (torque as current, torque in N·m, speed or position, as `float32` in the unit the kind names) and a completion callback; the four setpoint commands share it, so the observer surface stays small.
-- `OnIdentifyElectrical` — calls `CmdReserveExternalCalibration()` before starting estimation; `invalidState` if rejected; waits for the rotor to come to rest and measures and applies the current-sensor offsets before it estimates (REQ-CMS-001); on estimation success calls `CmdCompleteExternalCalibration()` and acknowledges once it is accepted; on estimation failure or a rejected completion calls `CmdReleaseExternalCalibration()`.
-- `OnRequestTelemetry` — broadcasts the current state and fault code via `focTelemetryStatusResponseId`, then the measured speed and measured position via `focTelemetryMotionId`. Position is the encoder's mechanical angle from the alignment zero, in [−π, π) (REQ-CTL-003); speed is the active mode's `ObserveMotion().measuredSpeed` — the outer loop's window speed in speed and position mode, the interrupt's filtered speed in torque mode (REQ-COM-002).
+- `OnIdentifyElectrical` — calls `CmdReserveExternalCalibration()` before starting estimation; `invalidState` if
+  rejected; waits for the rotor to come to rest and measures and applies the current-sensor offsets before it
+  estimates (REQ-CMS-001); on estimation success calls `CmdCompleteExternalCalibration()` and acknowledges once it
+  is accepted; on estimation failure or a rejected completion calls `CmdReleaseExternalCalibration()`.
+- `OnRequestTelemetry` — broadcasts the current state and fault code via `focTelemetryStatusResponseId`, then the
+  measured speed and measured position via `focTelemetryMotionId`. Position is the encoder's mechanical angle from
+  the alignment zero, in [−π, π) (REQ-CTL-003); speed is the active mode's `ObserveMotion().measuredSpeed` — the
+  outer loop's window speed in speed and position mode, the interrupt's filtered speed in torque mode
+  (REQ-COM-002).
 - `OnSelectAlgorithm`, `OnQueryAlgorithms` — receive a loop and algorithm already range-checked against the
   contract's enumerations; the result callback sends `AlgorithmsResponse` and then the acknowledgement.
 - `OnSetParameter`, `OnQueryParameter` — receive a parameter number and, for a write, a value the server has
@@ -678,7 +685,10 @@ The three commands without fields that 2.2 adds — `Calibrate`, `ClearCalibrati
 one send method that takes the command; like every other send it is refused for a node whose contract
 version differs.
 
-The four setpoints share one send method that takes a tagged setpoint (kind and `float32` value) and refuses a value that is not finite before it is sent. `TelemetryStatusResponse` is decoded into a state and a fault code and `TelemetryMotion` into a speed and a position, each on its own callback; a frame whose state is not one the contract defines is dropped, a fault code the client does not know is passed on.
+The four setpoints share one send method that takes a tagged setpoint (kind and `float32` value) and refuses a
+value that is not finite before it is sent. `TelemetryStatusResponse` is decoded into a state and a fault code and
+`TelemetryMotion` into a speed and a position, each on its own callback; a frame whose state is not one the
+contract defines is dropped, a fault code the client does not know is passed on.
 
 Registers response handlers for the server-to-client response message types. Response handlers decode the payload and invoke the corresponding observer callbacks, each naming the node that sent the response.
 
@@ -687,11 +697,17 @@ with the age it carries, so a caller pairs them; it keeps no state of its own. A
 control mode is dropped; a fault code the client does not know is passed on, so a newer firmware's code reads as
 unknown rather than being lost.
 
-`can-lite` hands a category the payload of a frame but not its sender. The client therefore takes a frame-origin source: a thin decorator between the bus and the protocol client records the node of each received frame just before the frame is dispatched, and the category reads it while handling that frame. Per-node contract compatibility (see Part A) and per-node response attribution both rest on it.
+`can-lite` hands a category the payload of a frame but not its sender. The client therefore takes a frame-origin
+source: a thin decorator between the bus and the protocol client records the node of each received frame just
+before the frame is dispatched, and the category reads it while handling that frame. Per-node contract
+compatibility (see Part A) and per-node response attribution both rest on it.
 
 ### Part D — FocMotorCanClient
 
-A self-contained client object for use in host tools and SIL tests. Internally composes the frame-origin tracker, `CanFrameTransport`, `CanProtocolClient`, and `FocMotorCategoryClient` as value members (no heap) and registers the category with the protocol client. Constructed with a `hal::Can&` reference only; callers send through the category client, passing the node ID with each command, so one client can command several nodes.
+A self-contained client object for use in host tools and SIL tests. Internally composes the frame-origin tracker,
+`CanFrameTransport`, `CanProtocolClient`, and `FocMotorCategoryClient` as value members (no heap) and registers the
+category with the protocol client. Constructed with a `hal::Can&` reference only; callers send through the category
+client, passing the node ID with each command, so one client can command several nodes.
 
 ---
 
@@ -716,30 +732,30 @@ A self-contained client object for use in host tools and SIL tests. Internally c
 
 ## Data Model
 
-| Entity                | Field     | Type / Unit    | Range                          | Notes                                                            |
-|-----------------------|-----------|----------------|--------------------------------|------------------------------------------------------------------|
-| FocMotorMode          | mode      | enum uint8     | torque=0, speed=1, position=2  | Transmitted as single byte                                       |
-| Setpoint              | value     | float32 wire   | finite                         | A, N·m, rad/s or rad by command; IEEE 754, MSB first             |
-| TelemetryMotion       | speed     | float32 wire   | finite                         | rad/s, the active mode's measured speed                          |
-| TelemetryMotion       | position  | float32 wire   | [−π, π)                        | rad, the encoder angle from the alignment zero                   |
-| FocMotorCategoryError | code      | enum uint8     | 0–6                            | See FocMotorMessages.hpp                                         |
-| FocControlLoop        | loop      | enum uint8     | current=0, speed=1, position=2 | Selects the loop of `SelectAlgorithm`                            |
-| FocParameter          | parameter | enum uint8     | see the parameter table        | Numbers of `SetParameter`, `QueryParameter`, `ParameterResponse` |
-| Parameter value       | value     | float32 wire   | the parameter's range          | IEEE 754, most significant byte first                            |
-| ParameterResponse     | flags     | bitfield uint8 | bit 0: automatic               | Other bits are zero                                              |
-| FocResetCause         | cause     | enum uint8     | 0–4                            | Value of `resetCause`, sent as its float                         |
+| Entity                | Field     | Type / Unit    | Range                          | Notes                                                             |
+|-----------------------|-----------|----------------|--------------------------------|-------------------------------------------------------------------|
+| FocMotorMode          | mode      | enum uint8     | torque=0, speed=1, position=2  | Transmitted as single byte                                        |
+| Setpoint              | value     | float32 wire   | finite                         | A, N·m, rad/s or rad by command; IEEE 754, MSB first              |
+| TelemetryMotion       | speed     | float32 wire   | finite                         | rad/s, the active mode's measured speed                           |
+| TelemetryMotion       | position  | float32 wire   | [−π, π)                        | rad, the encoder angle from the alignment zero                    |
+| FocMotorCategoryError | code      | enum uint8     | 0–6                            | See FocMotorMessages.hpp                                          |
+| FocControlLoop        | loop      | enum uint8     | current=0, speed=1, position=2 | Selects the loop of `SelectAlgorithm`                             |
+| FocParameter          | parameter | enum uint8     | see the parameter table        | Numbers of `SetParameter`, `QueryParameter`, `ParameterResponse`  |
+| Parameter value       | value     | float32 wire   | the parameter's range          | IEEE 754, most significant byte first                             |
+| ParameterResponse     | flags     | bitfield uint8 | bit 0: automatic               | Other bits are zero                                               |
+| FocResetCause         | cause     | enum uint8     | 0–4                            | Value of `resetCause`, sent as its float                          |
 | FocBoardKind          | kind      | enum uint8     | 0–255                          | Value of `boardKind`, sent as its float; kinds are the firmware's |
-| TelemetryCurrents     | sequence  | uint8          | 0–255, wraps                   | One per window the control loop closes                           |
-| TelemetryCurrents     | id, iq    | int16 wire     | INT16_MIN – INT16_MAX          | Physical = wire / 1000 [A], window mean                          |
-| TelemetryCurrents     | position  | int16 wire     | −31416 – 31415                 | Physical = wire / 10000 [rad], at the window's last sample       |
+| TelemetryCurrents     | sequence  | uint8          | 0–255, wraps                   | One per window the control loop closes                            |
+| TelemetryCurrents     | id, iq    | int16 wire     | INT16_MIN – INT16_MAX          | Physical = wire / 1000 [A], window mean                           |
+| TelemetryCurrents     | position  | int16 wire     | −31416 – 31415                 | Physical = wire / 10000 [rad], at the window's last sample        |
 
 ---
 
 ## Constraints & Limitations
 
-| Constraint              | Value / Description                                                                         |
-|-------------------------|---------------------------------------------------------------------------------------------|
-| No heap                 | All objects are value members or statically allocated; `infra::Function` for callbacks      |
+| Constraint              | Value / Description                                                                          |
+|-------------------------|----------------------------------------------------------------------------------------------|
+| No heap                 | All objects are value members or statically allocated; `infra::Function` for callbacks       |
 | One observer per server | `CanCategoryServer` uses `infra::Subject<Observer>` — only one observer may attach at a time |
-| Sequence byte           | Server handlers always skip the first byte (sequence number) before reading payload fields  |
-| Tracked nodes           | A client records the contract version of at most eight nodes                                |
+| Sequence byte           | Server handlers always skip the first byte (sequence number) before reading payload fields   |
+| Tracked nodes           | A client records the contract version of at most eight nodes                                 |

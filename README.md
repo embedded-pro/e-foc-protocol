@@ -23,7 +23,7 @@ definition.
 
 ## Layout
 
-```
+```text
 e-foc-protocol/
 ├── foc/          # units, accepted ranges and their checks
 ├── contract/     # message catalogue and wire contract (header only)
@@ -63,12 +63,12 @@ Compile checks for Cortex-M: `cortex-m4`, `cortex-m33` presets. Coverage: `cover
 
 ## Documentation
 
-| Document                                                       | Description                                                  |
-|----------------------------------------------------------------|--------------------------------------------------------------|
-| [Wire contract](documentation/design/wire-contract.md)         | Message catalogue, parameter table, server and client design |
-| [System architecture](documentation/architecture/system.md)    | Where the library sits between a motor node and its clients  |
-| [Requirements](documentation/requirements/wire-contract.yaml)  | Library requirements                                         |
-| [Agent rules](AGENTS.md)                                       | Development rules for people and AI agents                   |
+| Document                                                      | Description                                                  |
+|---------------------------------------------------------------|--------------------------------------------------------------|
+| [Wire contract](documentation/design/wire-contract.md)        | Message catalogue, parameter table, server and client design |
+| [System architecture](documentation/architecture/system.md)   | Where the library sits between a motor node and its clients  |
+| [Requirements](documentation/requirements/wire-contract.yaml) | Library requirements                                         |
+| [Agent rules](AGENTS.md)                                      | Development rules for people and AI agents                   |
 
 ## License
 

@@ -4,7 +4,7 @@ BDD integration tests using [cucumber-cpp](https://github.com/philips-software/a
 A `FocMotorCanClient` and a `FocMotorCategoryServer` behind a can-lite protocol server share a virtual
 CAN bus; the scenarios check that commands, answers and telemetry cross it unchanged.
 
-```
+```text
 integration_tests/
 ├── features/   # Gherkin specification, tagged with the requirement each scenario verifies
 ├── support/    # ProtocolFixture (client, server, observers) and the virtual bus

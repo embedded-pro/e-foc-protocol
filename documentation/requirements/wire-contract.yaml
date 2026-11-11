@@ -1,0 +1,31 @@
+- id: REQ-WIR-001
+  title: One versioned definition of the FOC motor category
+  shall: >
+    The library shall define every identifier, enumeration, scale factor, field layout and parameter
+    range of the FOC motor CAN category once, together with a major and minor contract version, so
+    that a motor node and every client build their frames from the same definition.
+
+- id: REQ-WIR-002
+  title: A client refuses a node whose contract it does not speak
+  shall: >
+    A client shall learn the contract version of each node it queries, and shall refuse to send any
+    command other than the version query to a node whose contract version differs from its own.
+
+- id: REQ-WIR-003
+  title: Frames of a foreign layout are rejected, not misread
+  shall: >
+    The server and the client shall reject every frame whose payload length differs from the length
+    the contract states for its message type, without decoding any part of it.
+
+- id: REQ-WIR-004
+  title: Commands, answers and telemetry survive the bus unchanged
+  shall: >
+    A command sent by the client shall reach the server's observer, and an answer or telemetry frame
+    sent by the server shall reach the client's observer, with the node it came from and with every
+    value equal to the one sent within the resolution the contract states for it.
+
+- id: REQ-WIR-005
+  title: No heap
+  shall: >
+    The library shall not allocate from the heap; every object shall be a value member or statically
+    allocated.

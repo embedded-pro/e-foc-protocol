@@ -1,15 +1,15 @@
 ---
-description: "embedded-scaffold C++ coding rules for embedded/real-time code: no heap allocation, bounded containers, real-time determinism, embedded compiler optimizations, Allman brace style, PascalCase naming, SOLID principles, const correctness, documentation alignment."
-applyTo: core/**,targets/**
+description: "e-foc-protocol C++ coding rules for embedded/real-time code: no heap allocation, bounded containers, real-time determinism, embedded compiler optimizations, Allman brace style, PascalCase naming, SOLID principles, const correctness, documentation alignment."
+applyTo: e-foc-protocol/**
 ---
 
-# embedded-scaffold C++ Rules
+# e-foc-protocol C++ Rules
 
-> **Scope**: These rules apply to embedded and real-time code paths (`core/`
-> runtime libraries, `targets/`). Host-side tooling (`tools/`) and test code may use
+> **Scope**: These rules apply to the `e-foc-protocol/` library, which runs on motor nodes
+> and on hosts alike. Test code may use
 > standard-library heap allocation where appropriate for a host environment.
 
-This repository is a template for resource-constrained embedded C++ projects.
+This repository is the FOC motor CAN protocol library shared by the e-foc firmware and its clients.
 Follow these rules strictly within the scoped paths.
 
 ## Memory — No Heap Allocation
@@ -38,22 +38,18 @@ Hot paths (control loops, ISR-reachable code) run under tight cycle budgets.
 - State an explicit cycle budget for each timing-critical loop and verify it
 - Prefer lookup tables / fixed-point over expensive transcendental calls
 
-Implementation files with hot-path code should enable aggressive optimization:
-
-```cpp
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC optimize("O3", "fast-math")
-#endif
-```
+Never give a file or function optimisation options of its own: no `#pragma GCC optimize`, no
+`optimize` attribute. GCC does not inline a callee whose options differ from its caller's; the
+consumer sets optimisation per translation unit.
 
 Apply `OPTIMIZE_FOR_SPEED` (from `numerical/math/CompilerOptimizations.hpp`) on
 hot-path methods.
 
 ## Naming
 
-- Classes/Methods: `PascalCase` (e.g., `AccumulatorImpl`, `Add()`)
+- Classes/Methods: `PascalCase` (e.g., `FocMotorCategoryServer`, `SendSetpoint()`)
 - Member variables: `camelCase` (e.g., `total`, `initialized`)
-- Namespaces: lowercase (`example`, `platform`)
+- Namespaces: lowercase (`can`, `foc`)
 
 ## Style
 
@@ -69,7 +65,7 @@ hot-path methods.
 ## Design
 
 - SOLID principles — constructor injection, one class = one concern
-- Platform dependencies injected via constructor and the platform `Board`/factory
+- Collaborators (transport, observers) injected via constructor
 - Reuse `infra/numerical-toolbox/` for PID, filters, and math — do not duplicate
 - RAII for resource management
 
@@ -84,4 +80,4 @@ Within architecture and design documents, all visuals must be Mermaid code block
 or ASCII art — external image references are not allowed.
 
 Full details: [copilot-instructions.md](../copilot-instructions.md),
-[CLAUDE.md](../../CLAUDE.md)
+[AGENTS.md](../../AGENTS.md)

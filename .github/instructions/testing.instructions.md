@@ -1,13 +1,13 @@
 ---
-description: "embedded-scaffold testing guidelines: prefer TEST_F for fixture-based tests, TYPED_TEST for multi-type tests, host simulation for integration, Arrange-Act-Assert pattern. StrictMock required; NiceMock forbidden."
+description: "e-foc-protocol testing guidelines: prefer TEST_F for fixture-based tests, TYPED_TEST for multi-type tests, host simulation for integration, Arrange-Act-Assert pattern. StrictMock required; NiceMock forbidden."
 applyTo: "**/test/**"
 ---
 
-# embedded-scaffold Testing Guidelines
+# e-foc-protocol Testing Guidelines
 
 ## File Structure
 
-- Unit test files: `core/<component>/implementations/test/Test{ComponentName}.cpp`
+- Unit test files: `e-foc-protocol/<component>/test/Test{ComponentName}.cpp`
 - Integration tests (BDD): `integration_tests/`
 - CMake: tests added via `add_subdirectory(test)` and registered with
   `emil_add_test` / `emil_build_for`
@@ -32,29 +32,7 @@ Tests are executable specifications. Write tests **before** implementation.
 
 ## Fixture Test Pattern (single type)
 
-```cpp
-#include "core/example_component/implementations/AccumulatorImpl.hpp"
-#include <gtest/gtest.h>
-
-namespace
-{
-    class AccumulatorImplTest : public ::testing::Test
-    {
-    protected:
-        example::AccumulatorImpl accumulator;
-    };
-}
-
-TEST_F(AccumulatorImplTest, accumulates_added_values)
-{
-    // Arrange
-    // Act
-    accumulator.Add(2);
-    accumulator.Add(3);
-    // Assert
-    EXPECT_EQ(5, accumulator.Total());
-}
-```
+See `e-foc-protocol/server/test/TestFocMotorCategoryServer.cpp` for the pattern.
 
 ## Typed Test Pattern (multiple numeric types — for templated algorithms)
 
@@ -91,6 +69,6 @@ TYPED_TEST(TestFirFilter, produces_correct_output)
 - Descriptive test names stating scenario and expected outcome
 - One behaviour per test
 - `EXPECT_NEAR` with explicit tolerance for floating-point assertions (not `EXPECT_EQ`)
-- Tests must not require hardware — use host stubs from
-  `targets/platform_implementations/host/`
+- Tests must not require hardware — use can-lite's `CanMock` and the observer mocks in
+  `test_doubles/`
 - Arrange-Act-Assert pattern; Allman brace style applies to test code too

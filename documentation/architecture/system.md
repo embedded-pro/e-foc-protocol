@@ -2,9 +2,9 @@
 title: "System Architecture"
 type: architecture
 status: draft
-version: 0.1.0
+version: 0.2.0
 component: "system"
-date: 2026-06-21
+date: 2026-11-11
 ---
 
 | Field     | Value               |
@@ -12,62 +12,65 @@ date: 2026-06-21
 | Title     | System Architecture |
 | Type      | architecture        |
 | Status    | draft               |
-| Version   | 0.1.0               |
+| Version   | 0.2.0               |
 | Component | system              |
-| Date      | 2026-06-21          |
+| Date      | 2026-11-11          |
 
-> **Example document** — replace this with the real architecture of your project.
-> It demonstrates the structure the documentation-validation CI expects (see
-> `documentation/templates/architecture.md`). Diagrams must be Mermaid or ASCII art;
-> external image references are not allowed.
+> Diagrams must be Mermaid or ASCII art; external image references are not allowed.
 
 ---
 
 ## Assumptions & Constraints
 
-- **Constraint**: no dynamic memory allocation in runtime/embedded code paths.
-- **Constraint**: application logic depends only on abstractions in `core/`, never on a concrete MCU.
-- **Assumption**: a host build exists for off-target testing and simulation.
+- **Constraint**: no dynamic memory allocation anywhere outside tests; the library runs on the motor node's
+  microcontroller as well as on hosts.
+- **Constraint**: the library knows nothing of what a node does with a command; it decodes and encodes.
+- **Constraint**: one definition of the contract, shared by the node and every client.
+- **Assumption**: the consumer provides embedded-infra-lib, can-lite and numerical-toolbox when it adds this
+  library to its own build; a standalone build takes them from submodules.
 
 ---
 
 ## System Overview
 
-The scaffold separates portable logic from hardware. Application entry points in
-`targets/` wire a platform `Board` into reusable libraries from `core/`. Host tools
-and BDD integration tests exercise the same `core/` libraries off-target.
+e-foc-protocol is the FOC motor category (`0x02`) of can-lite. A motor node registers the server category
+beside its can-lite protocol server and attaches one observer that drives the motor. A client — a host tool,
+a motion controller commanding several joints, or a SIL harness — owns a client object per bus and addresses
+each node by its node ID.
 
 ```mermaid
-graph TD
-    App[targets/example_app] --> Core[core libraries]
-    App --> Platform[targets/platform_implementations]
-    Tools[tools/example_tool] --> Core
-    IT[integration_tests] --> Core
-    Platform --> Infra[infra: embedded-infra-lib / hal]
+flowchart LR
+    subgraph Node["Motor node (e-foc firmware)"]
+        Bridge[Firmware bridge] -->|observes| Server[Category server]
+        Server --> PS[can-lite protocol server]
+    end
+    subgraph Client["Client (tool, motion controller, harness)"]
+        App[Application] -->|observes| CatClient[Category client]
+        CatClient --> PC[can-lite protocol client]
+    end
+    PS <-->|CAN 2.0B| PC
+    Server --> Contract[Wire contract]
+    CatClient --> Contract
 ```
 
 ---
 
 ## Component Decomposition
 
-| Sub-component | Responsibility |
-|---------------|----------------|
-| core          | Reusable libraries (interfaces + implementations), no entry points |
-| targets       | Application entry points and platform-specific board implementations |
-| tools         | Host-side developer utilities that reuse core libraries |
-| integration_tests | BDD specification of end-to-end behaviour |
+| Component | Responsibility                                                               |
+|-----------|------------------------------------------------------------------------------|
+| foc       | Units, accepted parameter ranges and their checks                            |
+| contract  | Message catalogue, payload descriptors, parameter table, contract version    |
+| server    | Decodes commands into observer callbacks; encodes answers and telemetry      |
+| client    | Encodes commands; decodes answers and telemetry; tracks each node's contract |
 
 ```mermaid
-graph LR
-    subgraph Repo
-        Core[core]
-        Targets[targets]
-        Tools[tools]
-        IT[integration_tests]
-    end
-    Targets --> Core
-    Tools --> Core
-    IT --> Core
+flowchart TD
+    Server[server] --> Contract[contract]
+    Client[client] --> Contract
+    Contract --> Foc[foc]
+    Contract --> CanLite[can-lite core]
+    Client --> CanLiteClient[can-lite client]
 ```
 
 ---
@@ -76,20 +79,25 @@ graph LR
 
 ### Provided Interfaces
 
-| Interface | Direction | Purpose | Invariants |
-|-----------|-----------|---------|------------|
-| Application entry point | provided | Boots the system and runs the main loop | Constructs platform before logic |
+| Interface                      | Direction | Purpose                                     | Invariants                               |
+|--------------------------------|-----------|---------------------------------------------|------------------------------------------|
+| FocMotorCategoryServer         | provided  | The node's side of the category             | Length-exact decode; one observer        |
+| FocMotorCategoryServerObserver | provided  | What the node does with each command        | Callbacks do not block or allocate       |
+| FocMotorCanClient              | provided  | The client's side of the category on a bus  | Refuses commands to an incompatible node |
+| FocMotorCategoryClientObserver | provided  | Answers and telemetry, named by source node | Callbacks do not block or allocate       |
 
 ### Required Interfaces
 
-| Interface | Direction | Purpose | Invariants |
-|-----------|-----------|---------|------------|
-| Platform Board | required | Exposes peripherals to the application | No heap; portable across host/target |
+| Interface         | Direction | Purpose                    | Invariants               |
+|-------------------|-----------|----------------------------|--------------------------|
+| hal::Can          | required  | Raw CAN bus access         | Provided by the platform |
+| CanFrameTransport | required  | Framing, sequence and ACKs | Provided by can-lite     |
 
 ---
 
 ## Open Questions & Decisions
 
-| # | Question / Decision | Status | Options Considered | Rationale |
-|---|---------------------|--------|--------------------|-----------|
-| 1 | Replace example component with real domain | open | — | Scaffold placeholder |
+| # | Question / Decision      | Status  | Options Considered                      | Rationale                                                        |
+|---|--------------------------|---------|-----------------------------------------|------------------------------------------------------------------|
+| 1 | Where the contract lives | decided | e-foc `core/can`, can-lite, own library | Shared by firmware and clients without pulling in the firmware   |
+| 2 | Board-kind registry      | decided | In the contract, in the firmware        | The contract carries a byte; which kinds exist is the firmware's |

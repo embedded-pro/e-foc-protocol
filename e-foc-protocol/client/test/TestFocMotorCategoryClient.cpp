@@ -130,6 +130,12 @@ TEST_F(FocMotorCategoryClientTest, SendEmergencyStop_TransmitsEmergencyStopComma
     EXPECT_EQ(lastSentMsgType, can::focEmergencyStopId);
 }
 
+TEST_F(FocMotorCategoryClientTest, SendQuickStop_TransmitsQuickStopCommand)
+{
+    client.SendQuickStop(1);
+    EXPECT_EQ(lastSentMsgType, can::focQuickStopId);
+}
+
 TEST_F(FocMotorCategoryClientTest, SendSelectControlMode_EncodesMode)
 {
     client.SendSelectControlMode(1, can::FocMotorMode::speed);

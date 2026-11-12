@@ -7,7 +7,7 @@ namespace can
     FocMotorCategoryServer::FocMotorCategoryServer(services::CanFrameTransport& transport)
         : CanCategoryServer(transport)
     {
-        AddMessageTypes(start, stop, clearFault, emergencyStop, selectControlMode, requestTelemetry, queryContractVersion,
+        AddMessageTypes(start, stop, clearFault, emergencyStop, quickStop, selectControlMode, requestTelemetry, queryContractVersion,
             settingsMessages.selectAlgorithm, settingsMessages.queryAlgorithms, settingsMessages.setParameter, settingsMessages.queryParameter);
     }
 
@@ -134,6 +134,22 @@ namespace can
                 observer.OnEmergencyStop([this](services::CanAckStatus status)
                     {
                         SendCommandAck(focEmergencyStopId, status);
+                    });
+            });
+
+        return true;
+    }
+
+    bool FocMotorCategoryServer::HandleQuickStop(const hal::Can::Message& data)
+    {
+        if (!PayloadExact(data, focQuickStopId))
+            return false;
+
+        NotifyObservers([this](auto& observer)
+            {
+                observer.OnQuickStop([this](services::CanAckStatus status)
+                    {
+                        SendCommandAck(focQuickStopId, status);
                     });
             });
 

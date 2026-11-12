@@ -48,6 +48,7 @@ namespace
         MOCK_METHOD(void, OnStop, (const infra::Function<void(services::CanAckStatus)>&), (override));
         MOCK_METHOD(void, OnClearFault, (const infra::Function<void(services::CanAckStatus)>&), (override));
         MOCK_METHOD(void, OnEmergencyStop, (const infra::Function<void(services::CanAckStatus)>&), (override));
+        MOCK_METHOD(void, OnQuickStop, (const infra::Function<void(services::CanAckStatus)>&), (override));
         MOCK_METHOD(void, OnSelectControlMode, (can::FocMotorMode, (const infra::Function<void(can::FocMotorMode)>&)), (override));
         MOCK_METHOD(void, OnSetSetpoint, (const can::FocSetpoint&, (const infra::Function<void()>&)), (override));
         MOCK_METHOD(void, OnAlign, ((const infra::Function<void(services::CanAckStatus)>&)), (override));
@@ -382,6 +383,10 @@ TEST_F(FocMotorWireContractTest, every_command_the_client_sends_reaches_the_serv
     client.SendEmergencyStop(1);
     DeliverToServer();
 
+    EXPECT_CALL(serverObserver, OnQuickStop(_));
+    client.SendQuickStop(1);
+    DeliverToServer();
+
     EXPECT_CALL(serverObserver, OnQueryFaultHistory(3, _));
     client.SendQueryFaultHistory(1, 3);
     DeliverToServer();
@@ -470,10 +475,10 @@ TEST_F(FocMotorWireContractTest, a_select_control_mode_response_reaches_the_clie
     DeliverToClient();
 }
 
-TEST_F(FocMotorWireContractTest, the_contract_is_version_3_1)
+TEST_F(FocMotorWireContractTest, the_contract_is_version_3_2)
 {
     EXPECT_EQ(3, can::focContractVersionMajor);
-    EXPECT_EQ(1, can::focContractVersionMinor);
+    EXPECT_EQ(2, can::focContractVersionMinor);
 }
 
 TEST_F(FocMotorWireContractTest, a_ready_telemetry_status_frame_carries_state_five)
@@ -679,6 +684,7 @@ namespace
             { can::focCalibrateId, { 0x00 } },
             { can::focClearCalibrationId, { 0x00 } },
             { can::focClearDiagnosticsId, { 0x00 } },
+            { can::focQuickStopId, { 0x00 } },
             { can::focQueryFaultHistoryId, { 0x00, 0x02 } },
             { can::focClearFaultHistoryId, { 0x00 } },
             { can::focRecalibrateId, { 0x00 } },
@@ -746,6 +752,7 @@ TEST_F(FocMotorWireContractTest, the_server_accepts_every_command_golden_vector)
     EXPECT_CALL(serverObserver, OnStop(_)).Times(AnyNumber());
     EXPECT_CALL(serverObserver, OnClearFault(_)).Times(AnyNumber());
     EXPECT_CALL(serverObserver, OnEmergencyStop(_)).Times(AnyNumber());
+    EXPECT_CALL(serverObserver, OnQuickStop(_)).Times(AnyNumber());
     EXPECT_CALL(serverObserver, OnSelectControlMode(_, _)).Times(AnyNumber());
     EXPECT_CALL(serverObserver, OnSetSetpoint(_, _)).Times(AnyNumber());
     EXPECT_CALL(serverObserver, OnAlign(_)).Times(AnyNumber());

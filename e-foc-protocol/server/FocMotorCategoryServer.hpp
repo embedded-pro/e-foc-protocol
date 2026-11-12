@@ -27,6 +27,7 @@ namespace can
         virtual void OnStop(const infra::Function<void(services::CanAckStatus)>& onDone) = 0;
         virtual void OnClearFault(const infra::Function<void(services::CanAckStatus)>& onDone) = 0;
         virtual void OnEmergencyStop(const infra::Function<void(services::CanAckStatus)>& onDone) = 0;
+        virtual void OnQuickStop(const infra::Function<void(services::CanAckStatus)>& onDone) = 0;
         virtual void OnSelectControlMode(FocMotorMode mode, const infra::Function<void(FocMotorMode)>& onActivated) = 0;
         virtual void OnSetSetpoint(const FocSetpoint& setpoint, const infra::Function<void()>& onDone) = 0;
 
@@ -76,6 +77,7 @@ namespace can
         bool HandleStop(const hal::Can::Message& data);
         bool HandleClearFault(const hal::Can::Message& data);
         bool HandleEmergencyStop(const hal::Can::Message& data);
+        bool HandleQuickStop(const hal::Can::Message& data);
         bool HandleSelectControlMode(const hal::Can::Message& data);
         bool HandleRequestTelemetry(const hal::Can::Message& data);
         bool HandleQueryContractVersion(const hal::Can::Message& data);
@@ -88,6 +90,7 @@ namespace can
         services::CanMessageHandler<FocMotorCategoryServer> stop{ focStopId, *this, &FocMotorCategoryServer::HandleStop };
         services::CanMessageHandler<FocMotorCategoryServer> clearFault{ focClearFaultId, *this, &FocMotorCategoryServer::HandleClearFault };
         services::CanMessageHandler<FocMotorCategoryServer> emergencyStop{ focEmergencyStopId, *this, &FocMotorCategoryServer::HandleEmergencyStop };
+        services::CanMessageHandler<FocMotorCategoryServer> quickStop{ focQuickStopId, *this, &FocMotorCategoryServer::HandleQuickStop };
         services::CanMessageHandler<FocMotorCategoryServer> selectControlMode{ focSelectControlModeId, *this, &FocMotorCategoryServer::HandleSelectControlMode };
         services::CanMessageHandler<FocMotorCategoryServer> requestTelemetry{ focRequestTelemetryId, *this, &FocMotorCategoryServer::HandleRequestTelemetry };
         services::CanMessageHandler<FocMotorCategoryServer> queryContractVersion{ focQueryContractVersionId, *this, &FocMotorCategoryServer::HandleQueryContractVersion };

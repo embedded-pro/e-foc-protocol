@@ -18,7 +18,7 @@
 namespace can
 {
     static constexpr uint8_t focContractVersionMajor = 3;
-    static constexpr uint8_t focContractVersionMinor = 1;
+    static constexpr uint8_t focContractVersionMinor = 2;
 
     constexpr bool IsCompatibleContract(uint8_t major, uint8_t minor)
     {
@@ -170,7 +170,7 @@ namespace can
         return MessageDescriptor{ id, name, direction, fields.data(), static_cast<uint8_t>(N) };
     }
 
-    inline constexpr std::array<MessageDescriptor, 24> focMotorMessages{ {
+    inline constexpr std::array<MessageDescriptor, 25> focMotorMessages{ {
         MakeDescriptor(focStartId, "Start", Direction::command),
         MakeDescriptor(focStopId, "Stop", Direction::command),
         MakeDescriptor(focIdentifyElectricalId, "IdentifyElectrical", Direction::command),
@@ -195,6 +195,7 @@ namespace can
         MakeDescriptor(focSetTorqueSetpointNewtonMeterId, "SetTorqueSetpointNewtonMeter", Direction::command, torqueNewtonMeterFields),
         MakeDescriptor(focSetSpeedSetpointId, "SetSpeedSetpoint", Direction::command, speedFields),
         MakeDescriptor(focSetPositionSetpointId, "SetPositionSetpoint", Direction::command, positionFields),
+        MakeDescriptor(focQuickStopId, "QuickStop", Direction::command),
     } };
 
     inline constexpr std::array<MessageDescriptor, 10> focMotorResponses{ {
@@ -263,7 +264,7 @@ namespace can
 
     inline constexpr float focMaxReading{ std::numeric_limits<float>::max() };
 
-    inline constexpr std::array<ParameterDescriptor, 89> focParameters{ {
+    inline constexpr std::array<ParameterDescriptor, 90> focParameters{ {
         { FocParameter::currentBandwidth, "currentBandwidth", "rad/s", foc::CommandLimits::minBandwidth, foc::CommandLimits::maxCurrentBandwidth, false, true },
         { FocParameter::currentSwitchingGain, "currentSwitchingGain", "A", 0.0f, foc::CommandLimits::maxSwitchingGain, false, false },
         { FocParameter::currentBoundaryLayer, "currentBoundaryLayer", "A", foc::CommandLimits::minBoundaryLayer, foc::CommandLimits::maxBoundaryLayer, false, false },
@@ -317,6 +318,7 @@ namespace can
         { FocParameter::temperatureMargin, "temperatureMargin", "K", foc::CommandLimits::minTemperatureMargin, foc::CommandLimits::maxTemperatureMargin, false, false },
         { FocParameter::busVoltageMinimum, "busVoltageMinimum", "V", 0.0f, foc::CommandLimits::maxBusVoltageLimit, false, false },
         { FocParameter::busVoltageMaximum, "busVoltageMaximum", "V", 0.0f, foc::CommandLimits::maxBusVoltageLimit, false, false },
+        { FocParameter::quickStopDeceleration, "quickStopDeceleration", "rad/s2", 0.0f, foc::CommandLimits::maxSpeedRate, false, false },
         { FocParameter::currentOffsetA, "currentOffsetA", "A", -focMaxReading, focMaxReading, false, false, true },
         { FocParameter::currentOffsetB, "currentOffsetB", "A", -focMaxReading, focMaxReading, false, false, true },
         { FocParameter::currentOffsetC, "currentOffsetC", "A", -focMaxReading, focMaxReading, false, false, true },

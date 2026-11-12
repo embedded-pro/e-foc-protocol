@@ -50,6 +50,7 @@ namespace
         MOCK_METHOD(void, OnStop, (const infra::Function<void(services::CanAckStatus)>&), (override));
         MOCK_METHOD(void, OnClearFault, (const infra::Function<void(services::CanAckStatus)>&), (override));
         MOCK_METHOD(void, OnEmergencyStop, (const infra::Function<void(services::CanAckStatus)>&), (override));
+        MOCK_METHOD(void, OnQuickStop, (const infra::Function<void(services::CanAckStatus)>&), (override));
         MOCK_METHOD(void, OnSelectControlMode, (can::FocMotorMode, (const infra::Function<void(can::FocMotorMode)>&)), (override));
         MOCK_METHOD(void, OnSetSetpoint, (const can::FocSetpoint&, (const infra::Function<void()>&)), (override));
         MOCK_METHOD(void, OnAlign, ((const infra::Function<void(services::CanAckStatus)>&)), (override));
@@ -237,6 +238,20 @@ TEST_F(FocMotorCategoryServerTest, HandleEmergencyStop_InvokesOnEmergencyStopObs
 
     ASSERT_TRUE(ackSpy.last.has_value());
     EXPECT_EQ(ackSpy.last->status, services::CanAckStatus::invalidState);
+}
+
+TEST_F(FocMotorCategoryServerTest, HandleQuickStop_InvokesOnQuickStopObserverAndAcknowledges)
+{
+    EXPECT_CALL(observer, OnQuickStop(_))
+        .WillOnce(Invoke([](const infra::Function<void(services::CanAckStatus)>& ack)
+            {
+                ack(services::CanAckStatus::success);
+            }));
+
+    server.HandleMessage(can::focQuickStopId, MakePayload(1));
+
+    ASSERT_TRUE(ackSpy.last.has_value());
+    EXPECT_EQ(ackSpy.last->status, services::CanAckStatus::success);
 }
 
 TEST_F(FocMotorCategoryServerTest, HandleIdentifyElectrical_InvokesObserver)

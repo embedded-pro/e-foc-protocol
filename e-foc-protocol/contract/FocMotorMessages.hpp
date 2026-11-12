@@ -27,6 +27,7 @@ namespace can
     static constexpr uint8_t focCalibrateId = 0x17;
     static constexpr uint8_t focClearCalibrationId = 0x18;
     static constexpr uint8_t focClearDiagnosticsId = 0x19;
+    static constexpr uint8_t focQuickStopId = 0x1A;
     static constexpr uint8_t focQueryFaultHistoryId = 0x1B;
     static constexpr uint8_t focClearFaultHistoryId = 0x1C;
     static constexpr uint8_t focRecalibrateId = 0x1D;
@@ -62,7 +63,8 @@ namespace can
         fault = 2,
         calibrating = 3,
         partialCalibration = 4,
-        ready = 5
+        ready = 5,
+        stopping = 6
     };
 
     enum class FocFaultCode : uint8_t
@@ -144,6 +146,7 @@ namespace can
         positionReferenceTimeConstant = 0x24,
         busVoltageMinimum = 0x30,
         busVoltageMaximum = 0x31,
+        quickStopDeceleration = 0x32,
         resistance = 0x40,
         inductance = 0x41,
         polePairs = 0x42,

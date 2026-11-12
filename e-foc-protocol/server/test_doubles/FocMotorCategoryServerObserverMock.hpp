@@ -15,6 +15,7 @@ namespace can
         MOCK_METHOD(void, OnStop, (const infra::Function<void(services::CanAckStatus)>&), (override));
         MOCK_METHOD(void, OnClearFault, (const infra::Function<void(services::CanAckStatus)>&), (override));
         MOCK_METHOD(void, OnEmergencyStop, (const infra::Function<void(services::CanAckStatus)>&), (override));
+        MOCK_METHOD(void, OnQuickStop, (const infra::Function<void(services::CanAckStatus)>&), (override));
         MOCK_METHOD(void, OnSelectControlMode, (FocMotorMode, (const infra::Function<void(FocMotorMode)>&)), (override));
         MOCK_METHOD(void, OnSetSetpoint, (const FocSetpoint&, (const infra::Function<void()>&)), (override));
         MOCK_METHOD(void, OnAlign, ((const infra::Function<void(services::CanAckStatus)>&)), (override));

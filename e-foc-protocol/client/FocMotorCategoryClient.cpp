@@ -59,6 +59,14 @@ namespace can
         return SendCommand(targetNodeId, focEmergencyStopId, services::CanPriority::emergency);
     }
 
+    bool FocMotorCategoryClient::SendQuickStop(uint16_t targetNodeId)
+    {
+        if (contracts.Incompatible(targetNodeId))
+            return false;
+
+        return SendCommand(targetNodeId, focQuickStopId);
+    }
+
     bool FocMotorCategoryClient::SendSelectControlMode(uint16_t targetNodeId, FocMotorMode mode)
     {
         if (contracts.Incompatible(targetNodeId))

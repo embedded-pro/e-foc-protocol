@@ -80,6 +80,7 @@ namespace can
         bool SendStop(uint16_t targetNodeId);
         bool SendClearFault(uint16_t targetNodeId);
         bool SendEmergencyStop(uint16_t targetNodeId);
+        bool SendQuickStop(uint16_t targetNodeId);
         bool SendSelectControlMode(uint16_t targetNodeId, FocMotorMode mode);
         bool SendSetpoint(uint16_t targetNodeId, const FocSetpoint& setpoint);
 

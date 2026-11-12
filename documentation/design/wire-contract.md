@@ -144,6 +144,34 @@ reserved until the firmware used it; its identifier, range and encoding are unch
 | `0x67` | `profileDeceleration` | rad/s2 | 0 – 100000, 0 the acceleration | no        | at the next outer-loop tick |
 | `0x68` | `profileJerk`         | rad/s3 | 0 – 10000000, 0 trapezoidal    | no        | at the next outer-loop tick |
 
+**Contract 3.2 — quick stop.** Version 3.2 adds one command, one state and one stored setting; nothing in
+3.1 changes. `QuickStop` decelerates the drive to rest under closed-loop control and leaves it `Ready`.
+
+| ID     | Message     | Direction | Fields (after the sequence byte) | Answer          |
+|--------|-------------|-----------|----------------------------------|-----------------|
+| `0x1A` | `QuickStop` | command   | —                                | the acknowledge |
+
+`QuickStop` is accepted in `Ready`, `Idle`, `Fault` and `Stopping` with the acknowledge `success` and no effect.
+It is accepted in `Enabled` and begins the stop; the state becomes `stopping`. It is refused with `invalidState`
+while the drive is `Calibrating`. In torque mode without a calibrated inertia the drive has no braking law, so it
+too refuses `QuickStop` with `invalidState`; the client should fall back to `EmergencyStop`.
+
+While `stopping` the drive ramps the speed reference to zero; a supervising fault cuts the stop and transitions
+the drive to `Fault`. Once the speed is below 2 rad/s or a timeout derived from the initial speed and
+`quickStopDeceleration` elapses the drive returns to `Ready`. `Disable`, `EmergencyStop` and any fault event
+all end the stop immediately.
+
+`FocMotorState` gains `stopping = 6`: the drive is in a controlled deceleration; settings and setpoints are not
+accepted (see the state table for contract 2.8 below).
+
+| ID     | Parameter               | Unit   | Range                           | Automatic | Takes effect                |
+|--------|-------------------------|--------|---------------------------------|-----------|-----------------------------|
+| `0x32` | `quickStopDeceleration` | rad/s2 | 0 – 100000, 0 brakes at current | no        | at the next QuickStop       |
+
+A `quickStopDeceleration` of 0 brakes using the current limit without a speed ramp (the firmware uses the
+calibrated inertia to compute the braking torque); the timeout in that mode is 1 s. A client older than 3.2 does
+not send `QuickStop` and does not ask for `quickStopDeceleration`.
+
 **Contract 2.1 — algorithms and parameters.** Version 2.1 adds four commands and two responses; nothing in
 2.0 changes, so a 2.0 client keeps working against a 2.1 server and a 2.1 client can tell from the minor
 version whether a server understands them.
@@ -369,6 +397,7 @@ drive from one that still needs a calibration.
 | `calibrating`        | 3     | `Calibrating`                                                         |
 | `partialCalibration` | 4     | `Idle` holding a non-empty but incomplete record                      |
 | `ready`              | 5     | `Ready`: calibrated and stopped; Start and the setpoints are accepted |
+| `stopping`           | 6     | controlled deceleration in progress (contract 3.2); settings and setpoints refused |
 
 | `FocFaultCode`      | Value | `state_machine::FaultCode` |
 |---------------------|-------|----------------------------|
@@ -507,8 +536,7 @@ answered once the empty history is stored, or with the category error `persisten
 A client older than 2.16 does not ask for the history.
 
 **Contract 2.17 — online recalibration.** Version 2.17 adds one command, one stored setting and six read-only
-parameters; nothing in 2.16 changes (e-foc `online-recalibration.md`). The command takes `0x1D`; `0x1A` stays reserved for
-the quick stop.
+parameters; nothing in 2.16 changes (e-foc `online-recalibration.md`). The command takes `0x1D`.
 
 | ID     | Message       | Direction | Fields | Answer                                                                        |
 |--------|---------------|-----------|--------|-------------------------------------------------------------------------------|
@@ -649,7 +677,7 @@ documentation. Because every decode is length-exact, a frame built from the exam
 |-------------------------------|---------------------------------------------|------------------------|------------------------------------------------------------------------------------------|
 | `0x03/0x04/0x05`              | retired, never reused                       | three `int16` kp/ki/kd | each loop derives its gains from its bandwidth (REQ-CTL-006), set through `SetParameter` |
 | `0x0A`                        | `Align`                                     | reserved, unused       | alignment is a first-class command here                                                  |
-| `FocMotorState`               | adds `partialCalibration = 4`, `ready = 5`  | stops at `calibrating` | speed and position modes can hold a partial record                                       |
+| `FocMotorState`               | adds `partialCalibration = 4`, `ready = 5`, `stopping = 6` | stops at `calibrating` | speed and position modes can hold a partial record; `stopping` is a controlled deceleration |
 | `0x12` / `0x92`               | contract version query and response         | absent                 | the example has no versioning                                                            |
 | `0x13`–`0x16`, `0x93`, `0x96` | algorithm selection and numbered parameters | absent                 | the example has one fixed law per loop and no parameter access                           |
 | category error `6`            | `invalidParameters`                         | absent                 | a model-based algorithm or setting can be refused for the motor model it would run on    |
@@ -684,6 +712,7 @@ The observer interface provides callbacks for:
 - `OnCalibrate`, `OnClearCalibration` — commands without fields, with a `CanAckStatus` result callback that
   is called when the sequence or the invalidation ends.
 - `OnClearDiagnostics` — a command without fields, with a completion callback.
+- `OnQuickStop` — the quick-stop command of contract 3.2, with a `CanAckStatus` result callback.
 - `OnRecalibrate` — the recalibration command of contract 2.17, with a `CanAckStatus` result callback.
 - `OnResetModel` — the reset of the stored recalibration of contract 2.18, with a status callback.
 

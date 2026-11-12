@@ -164,9 +164,9 @@ all end the stop immediately.
 `FocMotorState` gains `stopping = 6`: the drive is in a controlled deceleration; settings and setpoints are not
 accepted (see the state table for contract 2.8 below).
 
-| ID     | Parameter               | Unit   | Range                           | Automatic | Takes effect                |
-|--------|-------------------------|--------|---------------------------------|-----------|-----------------------------|
-| `0x32` | `quickStopDeceleration` | rad/s2 | 0 – 100000, 0 brakes at current | no        | at the next QuickStop       |
+| ID     | Parameter               | Unit   | Range                           | Automatic | Takes effect          |
+|--------|-------------------------|--------|---------------------------------|-----------|-----------------------|
+| `0x32` | `quickStopDeceleration` | rad/s2 | 0 – 100000, 0 brakes at current | no        | at the next QuickStop |
 
 A `quickStopDeceleration` of 0 brakes using the current limit without a speed ramp (the firmware uses the
 calibrated inertia to compute the braking torque); the timeout in that mode is 1 s. A client older than 3.2 does
@@ -389,14 +389,14 @@ Before 2.8 the fault codes `hardwareFault` (a CAN bus-off, a failed NVM write) a
 `none`, and `Ready` went out as `idle`, so a client could neither tell why the drive faulted nor tell a calibrated
 drive from one that still needs a calibration.
 
-| `FocMotorState`      | Value | Lifecycle state (e-foc `state-machine.md`)                            |
-|----------------------|-------|-----------------------------------------------------------------------|
-| `idle`               | 0     | `Idle`: not calibrated for the active mode                            |
-| `running`            | 1     | `Enabled`                                                             |
-| `fault`              | 2     | `Fault`                                                               |
-| `calibrating`        | 3     | `Calibrating`                                                         |
-| `partialCalibration` | 4     | `Idle` holding a non-empty but incomplete record                      |
-| `ready`              | 5     | `Ready`: calibrated and stopped; Start and the setpoints are accepted |
+| `FocMotorState`      | Value | Lifecycle state (e-foc `state-machine.md`)                                         |
+|----------------------|-------|------------------------------------------------------------------------------------|
+| `idle`               | 0     | `Idle`: not calibrated for the active mode                                         |
+| `running`            | 1     | `Enabled`                                                                          |
+| `fault`              | 2     | `Fault`                                                                            |
+| `calibrating`        | 3     | `Calibrating`                                                                      |
+| `partialCalibration` | 4     | `Idle` holding a non-empty but incomplete record                                   |
+| `ready`              | 5     | `Ready`: calibrated and stopped; Start and the setpoints are accepted              |
 | `stopping`           | 6     | controlled deceleration in progress (contract 3.2); settings and setpoints refused |
 
 | `FocFaultCode`      | Value | `state_machine::FaultCode` |
@@ -673,17 +673,17 @@ disagrees with this contract. e-foc's definitions are authoritative for this pro
 documentation. Because every decode is length-exact, a frame built from the example is rejected with
 `invalidPayload` rather than misread — visibly, not silently.
 
-| Message / item                | e-foc                                       | can-lite example       | Why                                                                                      |
-|-------------------------------|---------------------------------------------|------------------------|------------------------------------------------------------------------------------------|
-| `0x03/0x04/0x05`              | retired, never reused                       | three `int16` kp/ki/kd | each loop derives its gains from its bandwidth (REQ-CTL-006), set through `SetParameter` |
-| `0x0A`                        | `Align`                                     | reserved, unused       | alignment is a first-class command here                                                  |
+| Message / item                | e-foc                                                      | can-lite example       | Why                                                                                         |
+|-------------------------------|------------------------------------------------------------|------------------------|---------------------------------------------------------------------------------------------|
+| `0x03/0x04/0x05`              | retired, never reused                                      | three `int16` kp/ki/kd | each loop derives its gains from its bandwidth (REQ-CTL-006), set through `SetParameter`    |
+| `0x0A`                        | `Align`                                                    | reserved, unused       | alignment is a first-class command here                                                     |
 | `FocMotorState`               | adds `partialCalibration = 4`, `ready = 5`, `stopping = 6` | stops at `calibrating` | speed and position modes can hold a partial record; `stopping` is a controlled deceleration |
-| `0x12` / `0x92`               | contract version query and response         | absent                 | the example has no versioning                                                            |
-| `0x13`–`0x16`, `0x93`, `0x96` | algorithm selection and numbered parameters | absent                 | the example has one fixed law per loop and no parameter access                           |
-| category error `6`            | `invalidParameters`                         | absent                 | a model-based algorithm or setting can be refused for the motor model it would run on    |
-| `0x17`–`0x19`, `0x80`–`0xC2`  | commissioning commands and read-only values | absent                 | a client commissions and diagnoses the drive without a serial connection                 |
-| `0x88`                        | retired, never reused                       | `TelemetryElectrical`  | the bus voltage is measured once at start-up, so a live bus-voltage field would be stale |
-| `0x8A`                        | `TelemetryCurrents` stream                  | absent                 | a host rebuilds the current and position waveforms from a stream at up to 1 kHz          |
+| `0x12` / `0x92`               | contract version query and response                        | absent                 | the example has no versioning                                                               |
+| `0x13`–`0x16`, `0x93`, `0x96` | algorithm selection and numbered parameters                | absent                 | the example has one fixed law per loop and no parameter access                              |
+| category error `6`            | `invalidParameters`                                        | absent                 | a model-based algorithm or setting can be refused for the motor model it would run on       |
+| `0x17`–`0x19`, `0x80`–`0xC2`  | commissioning commands and read-only values                | absent                 | a client commissions and diagnoses the drive without a serial connection                    |
+| `0x88`                        | retired, never reused                                      | `TelemetryElectrical`  | the bus voltage is measured once at start-up, so a live bus-voltage field would be stale    |
+| `0x8A`                        | `TelemetryCurrents` stream                                 | absent                 | a host rebuilds the current and position waveforms from a stream at up to 1 kHz             |
 
 ### Part B — FocMotorCategoryServer
 

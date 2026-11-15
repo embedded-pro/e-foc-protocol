@@ -100,11 +100,11 @@ away turns the rotor three turns in the commanded direction. With `positionCircu
 behaves as in 3.2: the setpoint is taken modulo 2π, the drive takes the shorter way round to it, and the software
 position limits bound the angle within the turn, in [−π, π), so a limit beyond ±π never binds.
 
-| ID     | Parameter          | Unit | Range                           | Automatic | Takes effect                                     |
-|--------|--------------------|------|---------------------------------|-----------|--------------------------------------------------|
-| `0x69` | `positionCircular` | -    | 0 linear, 1 circular            | no        | at the next Start                                |
-| `0x5B` | `positionMinimum`  | rad  | ±2000π, off when ≥ max          | no        | at the next 1 kHz tick (e-foc `foc-position.md`) |
-| `0x5C` | `positionMaximum`  | rad  | ±2000π, off when ≤ min          | no        | at the next 1 kHz tick (e-foc `foc-position.md`) |
+| ID     | Parameter          | Unit | Range                  | Automatic | Takes effect                                     |
+|--------|--------------------|------|------------------------|-----------|--------------------------------------------------|
+| `0x69` | `positionCircular` | -    | 0 linear, 1 circular   | no        | at the next Start                                |
+| `0x5B` | `positionMinimum`  | rad  | ±2000π, off when ≥ max | no        | at the next 1 kHz tick (e-foc `foc-position.md`) |
+| `0x5C` | `positionMaximum`  | rad  | ±2000π, off when ≤ min | no        | at the next 1 kHz tick (e-foc `foc-position.md`) |
 
 `SetPositionSetpoint` is accepted within ±1000 turns (±2000π rad) in either mode. A setpoint beyond that, or
 outside software position limits that are on, is acknowledged `invalidPayload` and changes nothing; in circular

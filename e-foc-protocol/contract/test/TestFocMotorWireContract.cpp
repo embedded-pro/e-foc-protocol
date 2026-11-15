@@ -8,6 +8,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <limits>
+#include <numbers>
 #include <set>
 #include <vector>
 
@@ -475,10 +476,10 @@ TEST_F(FocMotorWireContractTest, a_select_control_mode_response_reaches_the_clie
     DeliverToClient();
 }
 
-TEST_F(FocMotorWireContractTest, the_contract_is_version_3_2)
+TEST_F(FocMotorWireContractTest, the_contract_is_version_4_0)
 {
-    EXPECT_EQ(3, can::focContractVersionMajor);
-    EXPECT_EQ(2, can::focContractVersionMinor);
+    EXPECT_EQ(4, can::focContractVersionMajor);
+    EXPECT_EQ(0, can::focContractVersionMinor);
 }
 
 TEST_F(FocMotorWireContractTest, a_ready_telemetry_status_frame_carries_state_five)
@@ -887,6 +888,39 @@ TEST_F(FocMotorWireContractTest, the_telemetry_rate_is_a_writable_whole_number_o
     EXPECT_TRUE(can::IsAcceptableParameterValue(*parameter, 1000.0f));
     EXPECT_FALSE(can::IsAcceptableParameterValue(*parameter, 1001.0f));
     EXPECT_FALSE(can::IsAcceptableParameterValue(*parameter, 250.5f));
+}
+
+TEST_F(FocMotorWireContractTest, circular_positioning_is_a_writable_toggle_at_0x69)
+{
+    const auto parameter = can::FindParameter(can::FocParameter::positionCircular);
+
+    ASSERT_TRUE(parameter.has_value());
+    EXPECT_EQ(0x69, static_cast<uint8_t>(can::FocParameter::positionCircular));
+    EXPECT_FALSE(parameter->readOnly);
+    EXPECT_TRUE(parameter->integer);
+    EXPECT_FALSE(parameter->automatic);
+    EXPECT_TRUE(can::IsAcceptableParameterValue(*parameter, 0.0f));
+    EXPECT_TRUE(can::IsAcceptableParameterValue(*parameter, 1.0f));
+    EXPECT_FALSE(can::IsAcceptableParameterValue(*parameter, 2.0f));
+    EXPECT_FALSE(can::IsAcceptableParameterValue(*parameter, 0.5f));
+}
+
+TEST_F(FocMotorWireContractTest, the_software_position_limits_span_a_thousand_turns_either_way)
+{
+    const auto thousandTurns = 2000.0f * std::numbers::pi_v<float>;
+
+    for (const auto id : { can::FocParameter::positionMinimum, can::FocParameter::positionMaximum })
+    {
+        const auto parameter = can::FindParameter(id);
+
+        ASSERT_TRUE(parameter.has_value());
+        EXPECT_TRUE(can::IsAcceptableParameterValue(*parameter, thousandTurns));
+        EXPECT_TRUE(can::IsAcceptableParameterValue(*parameter, -thousandTurns));
+        EXPECT_FALSE(can::IsAcceptableParameterValue(*parameter, thousandTurns * 1.001f));
+        EXPECT_FALSE(can::IsAcceptableParameterValue(*parameter, -thousandTurns * 1.001f));
+    }
+
+    EXPECT_FLOAT_EQ(thousandTurns, foc::CommandLimits::maxPositionSetpoint);
 }
 
 TEST_F(FocMotorWireContractTest, the_coulomb_friction_is_a_writable_motor_parameter_at_0x46)

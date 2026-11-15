@@ -90,6 +90,31 @@ The sections that follow name the version that introduced each message and param
 since compatibility needs equal versions, no client branches on a minor version, and a remark below that an
 older client does not ask for something describes the contract as it was, not behaviour to implement.
 
+**Contract 4.0 — multi-turn position.** Version 4.0 changes what a position means, so it is a major bump; no
+identifier and no field layout changes, and one stored setting is added. The setpoint of `SetPositionSetpoint`,
+the measured position of `TelemetryMotion` and the software position limits are now a multi-turn angle in
+radians from the position zero, still a `float32`: one turn is 2π, and the drive counts turns in either direction
+from the zero that alignment or homing sets (e-foc `foc-position.md`, Multi-Turn Position). Position mode is
+linear unless `positionCircular` is set: the drive moves to the setpoint the direct way, so a setpoint three turns
+away turns the rotor three turns in the commanded direction. With `positionCircular` set to `1` position mode
+behaves as in 3.2: the setpoint is taken modulo 2π, the drive takes the shorter way round to it, and the software
+position limits bound the angle within the turn, in [−π, π), so a limit beyond ±π never binds.
+
+| ID     | Parameter          | Unit | Range                           | Automatic | Takes effect                                     |
+|--------|--------------------|------|---------------------------------|-----------|--------------------------------------------------|
+| `0x69` | `positionCircular` | -    | 0 linear, 1 circular            | no        | at the next Start                                |
+| `0x5B` | `positionMinimum`  | rad  | ±2000π, off when ≥ max          | no        | at the next 1 kHz tick (e-foc `foc-position.md`) |
+| `0x5C` | `positionMaximum`  | rad  | ±2000π, off when ≤ min          | no        | at the next 1 kHz tick (e-foc `foc-position.md`) |
+
+`SetPositionSetpoint` is accepted within ±1000 turns (±2000π rad) in either mode. A setpoint beyond that, or
+outside software position limits that are on, is acknowledged `invalidPayload` and changes nothing; in circular
+mode the limits are checked against the setpoint taken modulo 2π, as in 3.2. `TelemetryMotion` reports the
+multi-turn position in every mode and state; a `float32` resolves it finer than 0.001 rad within ±1300 turns.
+The streamed position of `TelemetryCurrents` stays the angle within the turn, in [−π, π): it places the
+electrical waveforms, which repeat every turn. `positionWindow`, `followingErrorWindow` and
+`supervisionPositionError` keep their ranges; in linear mode the position error is no longer folded to half a
+turn, so an error above π is reached and every threshold up to 3.2 rad can trip.
+
 **Contract 3.0 — one form per command.** Version 3.0 removes every message that duplicated another one, so
 each quantity has one way onto the wire. The identifiers of the removed messages are retired and never reused.
 
@@ -635,9 +660,8 @@ calibration record, so no pole pairs, or no usable flux linkage — refuses the 
 no motor to convert for. The torque constant is also a motor parameter pair a client reads (`polePairs`,
 `fluxLinkage`), so a client can show the conversion it expects.
 
-`TelemetryMotion` carries the measured speed and the encoder angle (e-foc `service-can.md` Part D, `OnRequestTelemetry`). The d- and
-q-axis currents of `TelemetryCurrents` already resolve 1 mA and are not repeated; the position is the encoder's
-mechanical angle from the alignment zero in [−π, π), as in the current stream.
+`TelemetryMotion` carries the measured speed and the measured position, multi-turn since contract 4.0 (e-foc `service-can.md` Part D, `OnRequestTelemetry`). The d- and
+q-axis currents of `TelemetryCurrents` already resolve 1 mA and are not repeated.
 
 Physical-to-wire conversions use fixed-point scale factors. `int16` fields round to nearest and
 saturate (`CanFrameCodec::FloatToFixed16`):
@@ -781,7 +805,7 @@ client, passing the node ID with each command, so one client can command several
 | FocMotorMode          | mode      | enum uint8     | torque=0, speed=1, position=2  | Transmitted as single byte                                        |
 | Setpoint              | value     | float32 wire   | finite                         | A, N·m, rad/s or rad by command; IEEE 754, MSB first              |
 | TelemetryMotion       | speed     | float32 wire   | finite                         | rad/s, the active mode's measured speed                           |
-| TelemetryMotion       | position  | float32 wire   | [−π, π)                        | rad, the encoder angle from the alignment zero                    |
+| TelemetryMotion       | position  | float32 wire   | finite                         | rad, the multi-turn position from the position zero (4.0)         |
 | FocMotorCategoryError | code      | enum uint8     | 0–6                            | See FocMotorMessages.hpp                                          |
 | FocControlLoop        | loop      | enum uint8     | current=0, speed=1, position=2 | Selects the loop of `SelectAlgorithm`                             |
 | FocParameter          | parameter | enum uint8     | see the parameter table        | Numbers of `SetParameter`, `QueryParameter`, `ParameterResponse`  |

@@ -17,8 +17,8 @@
 
 namespace can
 {
-    static constexpr uint8_t focContractVersionMajor = 3;
-    static constexpr uint8_t focContractVersionMinor = 2;
+    static constexpr uint8_t focContractVersionMajor = 4;
+    static constexpr uint8_t focContractVersionMinor = 0;
 
     constexpr bool IsCompatibleContract(uint8_t major, uint8_t minor)
     {
@@ -264,7 +264,7 @@ namespace can
 
     inline constexpr float focMaxReading{ std::numeric_limits<float>::max() };
 
-    inline constexpr std::array<ParameterDescriptor, 90> focParameters{ {
+    inline constexpr std::array<ParameterDescriptor, 91> focParameters{ {
         { FocParameter::currentBandwidth, "currentBandwidth", "rad/s", foc::CommandLimits::minBandwidth, foc::CommandLimits::maxCurrentBandwidth, false, true },
         { FocParameter::currentSwitchingGain, "currentSwitchingGain", "A", 0.0f, foc::CommandLimits::maxSwitchingGain, false, false },
         { FocParameter::currentBoundaryLayer, "currentBoundaryLayer", "A", foc::CommandLimits::minBoundaryLayer, foc::CommandLimits::maxBoundaryLayer, false, false },
@@ -355,6 +355,7 @@ namespace can
         { FocParameter::recalibrationsRejected, "recalibrationsRejected", "-", 0.0f, focMaxReading, true, false, true },
         { FocParameter::recalibrationsStored, "recalibrationsStored", "-", 0.0f, focMaxReading, true, false, true },
         { FocParameter::homingRequired, "homingRequired", "-", 0.0f, 1.0f, true, false },
+        { FocParameter::positionCircular, "positionCircular", "-", 0.0f, 1.0f, true, false },
     } };
 
     constexpr std::optional<ParameterDescriptor> FindParameter(uint8_t id)

@@ -11,7 +11,7 @@ if (E_FOC_PROTOCOL_BUILD_TESTS)
     set(BUILD_TESTING On)
 endif()
 
-project(e_foc_protocol LANGUAGES C CXX ASM VERSION 0.0.1) # x-release-please-version
+project(e_foc_protocol LANGUAGES C CXX ASM VERSION 1.0.0) # x-release-please-version
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED On)

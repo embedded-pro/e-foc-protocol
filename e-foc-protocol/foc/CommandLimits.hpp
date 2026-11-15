@@ -13,7 +13,8 @@ namespace foc
 
         static constexpr float maxTorqueSetpoint{ 100.0f };
         static constexpr float maxSpeedSetpoint{ 1000.0f };
-        static constexpr float maxPositionSetpoint{ 2.0f * std::numbers::pi_v<float> };
+        static constexpr float maxPositionTurns{ 1000.0f };
+        static constexpr float maxPositionSetpoint{ 2.0f * std::numbers::pi_v<float> * maxPositionTurns };
 
         static constexpr float maxSwitchingGain{ 5.0f };
         static constexpr float minBoundaryLayer{ 0.01f };
@@ -61,7 +62,7 @@ namespace foc
         static constexpr float maxPeakCurrentTime{ 60.0f };
         static constexpr float maxPositionWindow{ 3.2f };
         static constexpr float maxPositionWindowTime{ 10.0f };
-        static constexpr float maxPositionLimit{ 3.2f };
+        static constexpr float maxPositionLimit{ maxPositionSetpoint };
         static constexpr float minCalibrationTemperature{ -40.0f };
         static constexpr float maxCalibrationTemperature{ 100.0f };
         static constexpr float minTemperatureLimit{ 40.0f };

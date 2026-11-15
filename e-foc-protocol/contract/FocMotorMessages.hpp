@@ -179,6 +179,7 @@ namespace can
         profileAcceleration = 0x66,
         profileDeceleration = 0x67,
         profileJerk = 0x68,
+        positionCircular = 0x69,
         supervisionWindow = 0x70,
         supervisionCurrentFraction = 0x71,
         supervisionDemandedSpeed = 0x72,

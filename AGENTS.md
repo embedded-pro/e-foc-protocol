@@ -1,95 +1,137 @@
-# e-foc-protocol — Agent Rules (canonical)
+# e-foc-protocol — Agent Rules
 
-Single source of truth for **Claude, Copilot and sub-agents**. `CLAUDE.md` and
-`.github/copilot-instructions.md` point here. Sub-agent definitions: `.claude/agents/` (Claude) and
-`.github/agents/` (Copilot). `.github/instructions/*.instructions.md` add only file-type specifics.
+<!-- shared:begin 0.3.0 sha256:9aee198041110762 -->
+Canonical rules for Claude, Copilot and sub-agents. Sections marked *(shared)* come from embedded-pro/embedded-agent-kit:
+edit them there, not here. *(repo)* sections belong to this repository. *Exceptions* overrides a shared rule.
 
-Versioned CAN wire contract of the e-foc motor drive: the FOC motor category (`0x02`) of can-lite, its
-message catalogue, its server (motor node side) and its client (host tools, motion controllers). It runs on
-the motor node's MCU and on hosts alike, so it is held to embedded rules everywhere.
+## Behaviour *(shared)*
 
-## Architecture
+- **Be as terse as possible.** No preamble, summary or narration. Report file paths and pass/fail.
+- Everything you write — code, docs, agent files, PR text — uses the fewest words that stay unambiguous.
+- Prose (docs, comments, agent files, commit and PR text) follows ASD-STE100 Simplified Technical English:
+  one word, one meaning; active voice; one instruction per sentence; sentences ≤ 20 words (procedures) or ≤ 25 (descriptions).
+- Ambiguous request: ask. Clear request: act.
+- Do only what was asked. No unrelated refactors, no extra features.
+- Batch reads, don't re-read, prefer targeted edits.
+- Never change a shared section. Add a deviation to *Exceptions* only when the user approves it.
 
-- `e-foc-protocol/foc/` — units (`Units.hpp`, namespace `foc`), the accepted parameter ranges
-  (`CommandLimits.hpp`) and the range checks (`ParameterValidation.hpp`).
-- `e-foc-protocol/contract/` — message catalogue (`FocMotorMessages.hpp`) and wire contract
-  (`FocMotorWireContract.hpp`: payload descriptors, parameter table, contract version). Header only.
-- `e-foc-protocol/server/` — `FocMotorCategoryServer`: decodes commands into observer callbacks and encodes
-  answers and telemetry. What the node does with a command is the firmware's, never this library's.
-- `e-foc-protocol/client/` — `FocMotorCategoryClient` and `FocMotorCanClient` (protocol client, frame-origin
-  tracker and category client on one `hal::Can`).
-- `*/test/` — unit tests; `*/test_doubles/` — observer mocks for consumers.
-- `integration_tests/` — cucumber-cpp: a client and a server on a virtual bus.
-- Dependencies — `embedded-infra-lib`, `can-lite` and `numerical-toolbox` come through `FetchContent`, each only
-  when its target (`infra.util`, `can_lite.core`, `numerical.math`) does not exist yet; a consumer that already
-  provides them keeps its own copies. Pinned revisions live in the root `CMakeLists.txt`.
+## Workflow *(shared)*
 
-CMake targets: `e_foc_protocol.foc`, `e_foc_protocol.contract`, `e_foc_protocol.server`,
-`e_foc_protocol.client`, `e_foc_protocol.{server,client}_test_doubles`. Includes are rooted at the repository
-root: `#include "e-foc-protocol/contract/FocMotorMessages.hpp"`. Protocol code is in namespace `can`.
+1. Multi-file or architectural change: update the design document first. Get approval before you write code.
+2. Read *Domain* and *Build*. Read each `.github/instructions/*.instructions.md` whose `applyTo` matches a file you change.
+3. Find the nearest existing pattern. Follow it.
+4. Per behaviour: write a failing test, write the minimum code that passes it, refactor with all tests green.
+5. Add each new file to its `CMakeLists.txt`.
+6. Update the documentation for each behavioural change.
+7. Run the *Build* commands until build and tests pass. Never disable, skip or weaken a test to get green.
+8. Non-trivial change: run the `reviewer` agent, or ask the user to run it. Fix each CRITICAL and WARNING finding.
+9. Report changed files, build pass/fail, test pass/fail.
 
-## Wire contract — compatibility
+## Memory *(shared)*
 
-- Every change to an identifier, a field layout, a scale factor or a parameter range is a contract change:
-  update `documentation/design/wire-contract.md` first, then the code, and bump `focContractVersionMajor`
-  (incompatible) or `focContractVersionMinor` (additive only).
-- A minor version only adds. Retired identifiers are never reused.
-- Every decode is length-exact; a frame of another length is rejected, never partially decoded.
-- Each command and response is tested against literal bytes, and client and server are tested against each
-  other (`contract/test/`).
+Scope: production code. Tests and host tools may use the heap.
 
-## Memory — no heap
+- Forbidden: `new`/`delete`/`malloc`/`free`, `make_unique`/`make_shared`,
+  `std::vector`/`string`/`deque`/`list`/`map`/`set`, recursion.
+- Use: `infra::BoundedVector<T>::WithMaxSize<N>`, `infra::BoundedString::WithStorage<N>`,
+  `infra::BoundedDeque`, `infra::BoundedList`/`IntrusiveList`, `std::array`, `std::optional`, `std::variant`.
 
-Forbidden everywhere except tests: `new`/`delete`/`malloc`/`free`, `make_unique`/`make_shared`,
-`std::vector`/`string`/`deque`/`list`/`map`/`set`, recursion. Use `infra::BoundedVector<T>::WithMaxSize<N>`,
-`infra::BoundedString::WithStorage<N>`, `std::array<T,N>`, `std::optional<T>`.
+## Interfaces & errors *(shared)*
 
-## Embedded
+- No virtual destructors: each adds a deleting destructor and thunks to flash.
+  Interface = pure virtual methods + `protected: ~I() = default;` (non-virtual).
+- Public `virtual ~Base() = default;` only on a base destroyed through a base pointer:
+  `delete`/`std::unique_ptr<Base>`, `infra::PolymorphicVariant<Base, ...>`, `infra::OptionalForPolymorphicObjects<Base, ...>`.
+  Put it on that base, not on every interface.
+- Not needed for `std::variant`, `std::optional<Concrete>`, `infra::SharedPtr`: they destroy the concrete type.
+- No exceptions. `std::optional`, `bool` or status enum; `really_assert` for preconditions. Never swallow an error.
+- Constructor injection; no global state.
 
-- No `#pragma GCC optimize` and no `optimize` attribute: GCC does not inline a callee whose options differ
-  from its caller's. The consumer sets optimisation per translation unit.
-- `OPTIMIZE_FOR_SPEED` (`numerical/math/CompilerOptimizations.hpp`) only on hot functions defined in a header.
+## Optimisation *(shared)*
+
+- No `#pragma GCC optimize`, no `optimize` attribute: GCC won't inline across differing options.
+  The consumer sets flags per translation unit.
+- `OPTIMIZE_FOR_SPEED` only on hot functions defined in a header.
+- Hot paths: no heap, no virtual dispatch, no blocking.
+
+## Style *(shared)*
+
+- `.clang-format` is authoritative. Allman, 4 spaces, `{}` init.
+- PascalCase types/methods; camelCase members and enum values; lowercase namespaces.
+  No `I` prefix; implementations end in `Impl`.
+- `#pragma once` only.
+- Fixed-width integers. `const`/`constexpr`-correct. Functions ≤ 30 lines (hard limit 50).
+- Comments: non-obvious *why* only, one line. No `TODO`/`FIXME`, commented-out code, or restating the code.
+  Fix or delete a comment the change makes stale.
+
+## Testing *(shared)*
+
+- `TEST_F` for fixtures, `TYPED_TEST` for types, plain `TEST()` for stateless checks.
+- `StrictMock` only. `EXPECT_NEAR` with explicit tolerance. Fixture in an anonymous namespace, macros outside.
+- Heap allowed in tests.
+
+## Documentation *(shared)*
+
+- Update docs before or with any behavioural change.
+- One fact, one place: link, never restate.
+- Visuals: Mermaid or ASCII.
+<!-- shared:end -->
+
+## Domain *(repo)*
+
+- Versioned CAN wire contract of the e-foc motor drive: the FOC motor category (`0x02`) of can-lite, its message
+  catalogue, its server (motor node side) and its client (host tools, motion controllers).
+- It runs on the motor node and on hosts. *Memory* applies to all code except tests.
+- Layout:
+  - `e-foc-protocol/foc/` — units (`Units.hpp`, namespace `foc`), accepted parameter ranges (`CommandLimits.hpp`),
+    range checks (`ParameterValidation.hpp`).
+  - `e-foc-protocol/contract/` — message catalogue (`FocMotorMessages.hpp`) and wire contract
+    (`FocMotorWireContract.hpp`: payload descriptors, parameter table, contract version). Header only.
+  - `e-foc-protocol/server/` — `FocMotorCategoryServer`: decodes commands into observer callbacks, encodes answers
+    and telemetry. What the node does with a command belongs to the firmware, never to this library.
+  - `e-foc-protocol/client/` — `FocMotorCategoryClient` and `FocMotorCanClient` (protocol client, frame-origin
+    tracker and category client on one `hal::Can`).
+  - `*/test/` — unit tests. `*/test_doubles/` — observer mocks for consumers.
+  - `integration_tests/` — cucumber-cpp: a client and a server on a virtual bus.
+- Protocol code is in namespace `can`. Includes are rooted at the repository root:
+  `#include "e-foc-protocol/contract/FocMotorMessages.hpp"`.
+- CMake targets: `e_foc_protocol.foc`, `e_foc_protocol.contract`, `e_foc_protocol.server`, `e_foc_protocol.client`,
+  `e_foc_protocol.{server,client}_test_doubles`.
+- Dependencies: `embedded-infra-lib`, `can-lite`, `numerical-toolbox` come through `FetchContent`, each only when its
+  target (`infra.util`, `can_lite.core`, `numerical.math`) does not exist yet. A consumer keeps its own copies.
+  Pinned revisions live in the root `CMakeLists.txt`.
+- Wire contract compatibility:
+  - A change to an identifier, field layout, scale factor or parameter range is a contract change.
+    Update `documentation/design/wire-contract.md` first, then the code.
+  - Bump `focContractVersionMajor` (incompatible) or `focContractVersionMinor` (additive only).
+  - A minor version only adds. Never reuse a retired identifier.
+  - Every decode is length-exact. Reject a frame of another length; never decode it partially.
+  - Test each command and response against literal bytes. Test client and server against each other
+    (`contract/test/`).
 - Math through the toolbox wrappers (`math::IsFinite`, `math::Round`, ...), never `std::` equivalents.
+  Reuse numerical-toolbox (`numerical/...`); do not duplicate it.
 - Unit types (`foc::Ampere`, `foc::Radians`, ...) wherever one exists.
-
-## Interfaces & errors
-
-- Interfaces (observers) are pure virtual with a `protected:` non-virtual `~I() = default`. Never a virtual
-  destructor.
-- No exceptions. `std::optional<T>`, `bool` or status enums. `really_assert` for preconditions.
-
-## Style
-
-- Allman braces, 4-space indent, `.clang-format` authoritative. `{}` init. PascalCase types and methods,
-  camelCase members, lowercase namespaces. Fixed-width integers. Functions ≤ ~30 lines.
-- **No comments** except a short non-obvious *why*. No `TODO`/`FIXME`, no commented-out code.
-
-## Testing
-
-- TDD. GoogleTest: `TEST_F` for fixture tests, plain `TEST()` only for simple stateless checks. Fixture in an
-  anonymous namespace, macros outside.
-- **`StrictMock` only** (`NiceMock`/`NaggyMock` forbidden). `EXPECT_NEAR` with an explicit tolerance.
-- Test files: `<component>/test/Test{Name}.cpp`, registered with `emil_build_for` / `emil_add_test`.
+- Only templates have method bodies in headers.
+- Tests: `<component>/test/Test{Name}.cpp`, registered with `emil_build_for` / `emil_add_test`. No hardware:
+  use can-lite's `CanMock` and the mocks in `test_doubles/`.
 - Integration steps check values inside the mock action (`EXPECT_*` there), not in `EXPECT_CALL` matchers:
   the cucumber runner cannot report a gmock "unexpected call" failure.
+- Docs: `documentation/design/wire-contract.md` is the specification. `TestWireContractDocumentation` checks it
+  against the code. Requirements: `documentation/requirements/*.yaml`. New document: start from
+  `documentation/templates/`.
 
-## Documentation
-
-Design-first: `documentation/design/wire-contract.md` is the specification and is checked against the code by
-`TestWireContractDocumentation`. Requirements: `documentation/requirements/*.yaml`. Templates:
-`documentation/templates/`. Visuals: Mermaid or ASCII only.
-
-## Build
+## Build *(repo)*
 
 ```bash
 cmake --preset host && cmake --build --preset host-Debug
 ctest --preset host
-cmake --preset bootstrap   # once: fetches the toolchain files for windows, cortex-m4, cortex-m33
+cmake --preset bootstrap
 cmake --preset cortex-m4 && cmake --build --preset cortex-m4-RelWithDebInfo
 ```
 
-Presets: `host`, `host-single-Debug`, `coverage`, `bootstrap`, `windows`, `cortex-m4`, `cortex-m33`.
+- Run `bootstrap` once: it fetches the toolchain files for `windows`, `cortex-m4` and `cortex-m33`.
+- Presets: `host`, `host-single-Debug`, `coverage`, `bootstrap`, `windows`, `cortex-m4`, `cortex-m33`.
 
-## Assistant behavior
+## Exceptions *(repo)*
 
-Be terse: minimal prose, report file paths and pass/fail.
+None.

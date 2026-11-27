@@ -218,6 +218,9 @@ and always carries all three loops: a loop the active mode does not run reports 
 The mode is what tells a client which loops it may tune, and it is the only message that reports the mode
 without changing it.
 
+`QueryParameter` of a staged-version parameter (`0xB5`–`0xB7`, contract 2.6) answers category error `busy` while
+another staged-version query waits for the staged pack to be read at start-up. The client sends it again.
+
 A `float32` field is the IEEE 754 single-precision bit pattern sent most significant byte first, the order of
 every other multi-byte field. The parameters span from 10⁻⁹ kg·m² to 10⁶ bit/s, which no single fixed-point
 scale carries, and a float keeps seven significant digits across all of them. An integer parameter is sent
@@ -400,7 +403,9 @@ the node reports 2.6 or newer.
 This firmware answers all seven. The version numbers are those of the CMake project version the build was
 configured with, and the board kind is the one the platform reports (`application::BoardKind`). The staged
 version is the product version of the pack the firmware-upgrade service holds staged
-(e-foc `service-firmware-upgrade.md` Part D); a board that cannot be updated answers it with zero.
+(e-foc `service-firmware-upgrade.md` Part D); a board that cannot be updated answers it with zero. At start-up
+the node reads the staged pack back, and answers a staged-version query when that read ends. A second
+staged-version query while one waits answers category error `busy`; the client sends it again.
 
 **Contract 2.7 — missing phase.** Version 2.7 adds one fault code; nothing in 2.6 changes.
 
@@ -770,6 +775,8 @@ The other answers of `Calibrate` and `ClearCalibration` are in the contract 2.2 
 - The same command or another commissioning command is still running.
 - A stored setting or a motor parameter is still being written.
 - The drive still loads or stores its records at start-up, for about 25 ms after its first heartbeat.
+- `QueryParameter` of a staged-version parameter (`0xB5`–`0xB7`) only: another staged-version query still waits
+  for the staged pack to be read at start-up.
 
 Mode selection, `SetParameter` and `Start` in `Idle` or `Ready` also answer `busy` for these causes. In
 `Calibrating`, `Enabled`, `Stopping` and `Fault`, `Start` answers acknowledge `invalidState`. `busy` changes

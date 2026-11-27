@@ -311,6 +311,8 @@ does, and the drive returns to `Idle`. Both are refused unless the drive is stop
 | Interrupted by an emergency stop or a fault               | category error `abortedByFault`    |
 | The record could not be stored or invalidated             | category error `persistenceFailed` |
 
+Part B, [Commissioning answers](#commissioning-answers), gives the causes of `busy` and the client's response.
+
 The read-only parameters answer `QueryParameter` like any other and are refused by `SetParameter` with
 `invalidPayload`. Counts travel as the float of the count, exact up to 2²⁴ (about fourteen minutes of
 control periods at 20 kHz) and rounded beyond.
@@ -718,10 +720,11 @@ The observer interface provides callbacks for:
 - `OnQueryFaultHistory`, `OnClearFaultHistory` — the fault history of contract 2.16, with a record or a status callback.
 - `OnSelectControlMode` — takes a `FocMotorMode` and a result callback.
 - `OnSetSetpoint` — takes a small tagged value (torque as current, torque in N·m, speed or position, as `float32` in the unit the kind names) and a completion callback; the four setpoint commands share it, so the observer surface stays small.
-- `OnIdentifyElectrical` — calls `CmdReserveExternalCalibration()` before starting estimation; `invalidState` if
-  rejected; waits for the rotor to come to rest and measures and applies the current-sensor offsets before it
-  estimates (REQ-CMS-001); on estimation success calls `CmdCompleteExternalCalibration()` and acknowledges once it
-  is accepted; on estimation failure or a rejected completion calls `CmdReleaseExternalCalibration()`.
+- `OnIdentifyElectrical` — calls `CmdReserveExternalCalibration()` before starting estimation; refusals as in
+  [Commissioning answers](#commissioning-answers); waits for the rotor to come to rest and measures and applies
+  the current-sensor offsets before it estimates (REQ-CMS-001); on estimation success calls
+  `CmdCompleteExternalCalibration()` and acknowledges once it is accepted; on estimation failure or a rejected
+  completion calls `CmdReleaseExternalCalibration()`.
 - `OnRequestTelemetry` — broadcasts the current state and fault code via `focTelemetryStatusResponseId`, then the
   measured speed and measured position via `focTelemetryMotionId`. Position is the encoder's mechanical angle from
   the alignment zero, in [−π, π) (REQ-CTL-003); speed is the active mode's `ObserveMotion().measuredSpeed` — the
@@ -744,6 +747,38 @@ The four setpoint handlers sit in a third handler group.
 The commissioning handlers — `Align`, the electrical identification, `Calibrate` and `ClearCalibration` — sit in
 one handler group of the server, and the maintenance handlers — `ClearDiagnostics`, the fault history,
 `Recalibrate` and `ResetModel` — in another, so the server's own surface stays small as the contract grows.
+
+<a id="commissioning-answers"></a>**Commissioning answers.** The server forwards each commissioning command to
+the observer and sends the answer the observer gives. The e-foc firmware answers as follows (e-foc
+`service-can.md`, IdentifyElectrical and *commissioning-busy*):
+
+| Command              | Situation                                                                      | Answer                             |
+|----------------------|--------------------------------------------------------------------------------|------------------------------------|
+| each of the four     | Another command or a non-volatile write still outstanding                      | category error `busy`              |
+| `Align`              | The drive is not stopped, or holds no electrical parameters                    | category error `modeMismatch`      |
+| `Align`              | The alignment fails                                                            | category error `calibrationFailed` |
+| `Align`              | Interrupted by an emergency stop or a fault                                    | category error `abortedByFault`    |
+| `Align`              | The calibration record could not be stored                                     | category error `persistenceFailed` |
+| `IdentifyElectrical` | The drive is not stopped (`Idle` or `Ready`)                                   | acknowledge `invalidState`         |
+| `IdentifyElectrical` | No standstill, failed offset measurement, poor R/L fit or no usable pole pairs | category error `calibrationFailed` |
+| `IdentifyElectrical` | The calibration record could not be stored                                     | category error `persistenceFailed` |
+
+The other answers of `Calibrate` and `ClearCalibration` are in the contract 2.2 table.
+
+`busy` has these causes:
+
+- The same command or another commissioning command is still running.
+- A stored setting or a motor parameter is still being written.
+- The drive still loads or stores its records at start-up, for about 25 ms after its first heartbeat.
+
+Mode selection, `SetParameter` and `Start` in `Idle` or `Ready` also answer `busy` for these causes. In
+`Calibrating`, `Enabled`, `Stopping` and `Fault`, `Start` answers acknowledge `invalidState`. `busy` changes
+nothing on the drive. A client sends the command again on `busy`, after a short delay.
+These answers use existing enumerators with their existing meaning; no identifier or layout changes, so the
+contract version stays.
+
+An emergency stop or a fault can abandon an electrical identification before it answers. That run sends no
+answer, so a client applies its timeout. The next `IdentifyElectrical` starts afresh and does not answer `busy`.
 
 ### Part C — FocMotorCategoryClient
 

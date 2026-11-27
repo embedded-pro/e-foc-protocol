@@ -771,8 +771,9 @@ The other answers of `Calibrate` and `ClearCalibration` are in the contract 2.2 
 - A stored setting or a motor parameter is still being written.
 - The drive still loads or stores its records at start-up, for about 25 ms after its first heartbeat.
 
-Mode selection and `SetParameter` also answer `busy` for these causes. `busy` changes nothing on the drive. A
-client sends the command again on `busy`, after a short delay.
+Mode selection, `SetParameter` and `Start` in `Idle` or `Ready` also answer `busy` for these causes. In
+`Calibrating`, `Enabled`, `Stopping` and `Fault`, `Start` answers acknowledge `invalidState`. `busy` changes
+nothing on the drive. A client sends the command again on `busy`, after a short delay.
 These answers use existing enumerators with their existing meaning; no identifier or layout changes, so the
 contract version stays.
 
